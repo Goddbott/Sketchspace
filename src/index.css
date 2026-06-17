@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .canvas-grid {
+    background-image: 
+      linear-gradient(rgba(185, 255, 102, 0.4) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(185, 255, 102, 0.4) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+}
