@@ -28,7 +28,7 @@ function AppLayout() {
     <div className={`w-screen h-screen overflow-hidden flex relative font-sans transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-900'} p-3 sm:p-2`}>
       
       {/* Global Navigation Tab Bar (Moved to bottom right to avoid conflicts) */}
-      <div className="absolute bottom-8 right-8 flex items-center gap-1 bg-white p-1.5 rounded-2xl shadow-md border border-gray-200 z-[60]">
+      <div className="absolute bottom-5 right-5 flex items-center gap-1 bg-white p-1.5 rounded-2xl shadow-md border border-gray-200 z-[60]">
         {tabs.map(tab => (
           <button 
             key={tab}
@@ -39,7 +39,7 @@ function AppLayout() {
           </button>
         ))}
         <div className="w-px h-4 bg-gray-300 mx-2"></div>
-        <button onClick={() => setDarkMode(!darkMode)} className="p-1.5 text-gray-500 hover:bg-gray-100 rounded-xl mr-1">
+        <button onClick={() => setDarkMode(!darkMode)} className="p-1.5 text-gray-500 hover:bg-gray-100 rounded-xl mr-1" title="Toggle Theme">
           {darkMode ? <Sun size={14} /> : <Moon size={14} />}
         </button>
       </div>

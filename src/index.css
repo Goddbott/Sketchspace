@@ -10,3 +10,153 @@
     background-size: 32px 32px;
   }
 }
+
+/* =========================================================
+   Tldraw Custom Property Labels (Excalidraw-style)
+   ========================================================= */
+
+/* Slightly widen the panel so text fits neatly */
+.tlui-style-panel {
+  min-width: 172px !important;
+  padding: 12px !important;
+}
+
+/* 
+   We target the parent .tlui-toolbar container using the :has() selector.
+   This ensures we style the entire toolbar row as a single unit,
+   preventing items (like the pattern fill button) from separating from the group.
+*/
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.color"]),
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.fill"]),
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.dash"]),
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.size"]),
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.font"]),
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.align"]),
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.verticalAlign"]) {
+  position: relative !important;
+  margin-top: 28px !important;
+  margin-bottom: 8px !important;
+  overflow: visible !important; /* Ensure labels aren't clipped */
+}
+
+/* Ensure the first item (color) fits its label properly */
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.color"]) {
+  margin-top: 20px !important;
+}
+
+/* Style the injected labels on the parent toolbars */
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.color"])::before,
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.fill"])::before,
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.dash"])::before,
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.size"])::before,
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.font"])::before,
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.align"])::before,
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.verticalAlign"])::before {
+  display: block !important;
+  position: absolute !important;
+  top: -18px !important;
+  left: 0 !important;
+  font-size: 10px;
+  font-weight: 700;
+  color: #4b5563; /* Tailwind gray-600 */
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  pointer-events: none;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  z-index: 10;
+}
+
+/* Set the text content for the labels */
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.color"])::before { content: 'Stroke Color'; }
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.fill"])::before { content: 'Background Fill'; }
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.dash"])::before { content: 'Stroke Style & Sloppiness'; }
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.size"])::before { content: 'Stroke Width'; }
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.font"])::before { content: 'Font Style'; }
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.align"])::before { content: 'Text Alignment'; }
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.verticalAlign"])::before { content: 'Vertical Alignment'; }
+
+/* Fix opacity slider container and label */
+.tlui-style-panel .tlui-slider__container {
+  position: relative !important;
+  margin-top: 28px !important;
+  margin-bottom: 8px !important;
+  max-width: 156px !important; /* Cap width so it aligns with 4-column buttons */
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.tlui-style-panel .tlui-slider__container::before {
+  content: 'Opacity';
+  display: block !important;
+  position: absolute !important;
+  top: -18px !important;
+  left: 0 !important;
+  font-size: 10px;
+  font-weight: 700;
+  color: #4b5563;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  pointer-events: none;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  z-index: 10;
+}
+
+/* =========================================================
+   UI Menu Layout Spacing
+   ========================================================= */
+
+/* Detach top-left menu from the edge */
+.tlui-menu-zone {
+  margin: 12px !important;
+  border-radius: var(--tl-radius-4) !important;
+  border: 1px solid var(--tl-color-divider) !important;
+  box-shadow: var(--tl-shadow-2) !important;
+}
+
+/* Detach top-right style panel from the edge */
+.tlui-style-panel__wrapper {
+  margin: 12px !important;
+}
+
+/* Detach bottom-left zoom menu from the edge */
+.tlui-navigation-panel {
+  margin: 12px !important;
+  border-radius: var(--tl-radius-4) !important;
+  border: 1px solid var(--tl-color-divider) !important;
+  box-shadow: var(--tl-shadow-2) !important;
+}
+
+/* Remove the hardcoded flush background extension from bottom-left */
+.tlui-navigation-panel::before {
+  display: none !important;
+}
+
+/* =========================================================
+   Actions Menu Text Labels (Convert grid to 2-column text list)
+   ========================================================= */
+.tlui-actions-menu .tlui-grid {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  width: 380px !important; /* Wide enough for 2 columns of text */
+  gap: 4px !important;
+  padding: 8px !important;
+}
+
+.tlui-actions-menu .tlui-button {
+  width: 100% !important;
+  justify-content: flex-start !important;
+  padding: 0 12px !important;
+  border-radius: var(--tl-radius-2) !important;
+}
+
+.tlui-actions-menu .tlui-button::after {
+  content: attr(title) !important;
+  display: block !important;
+  margin-left: 12px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: var(--tl-color-text-1) !important;
+  white-space: nowrap !important;
+}

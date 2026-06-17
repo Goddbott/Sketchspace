@@ -1,5 +1,5 @@
 {
-  "name": "sketchpad",
+  "name": "sketchspace",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -15,7 +15,9 @@
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.18.0",
     "tldraw": "^5.1.1",
-    "uuid": "^14.0.0"
+    "uuid": "^14.0.0",
+    "y-websocket": "^3.0.0",
+    "yjs": "^13.6.31"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
