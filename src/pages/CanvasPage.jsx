@@ -6,14 +6,24 @@ import {
   DefaultMainMenu,
   DefaultMainMenuContent,
   TldrawUiMenuGroup, 
-  TldrawUiMenuActionItem,
   TldrawUiMenuItem,
+  TldrawUiMenuActionItem,
   useEditor,
-  useValue
+  useValue,
+  createTLStore,
+  defaultShapeUtils,
+  getSnapshot,
+  loadSnapshot
 } from 'tldraw';
-import { Lock, Unlock, Search, ChevronUp, ChevronDown, X } from 'lucide-react';
+import { Lock, Unlock, Search, ChevronUp, ChevronDown, X, Magnet } from 'lucide-react';
 import 'tldraw/tldraw.css';
-import { useYjsStore } from '../hooks/useYjsStore';
+
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { get, set } from 'idb-keyval';
+import debounce from 'lodash.debounce';
+import { fetchCanvasFromSupabase, saveCanvasToSupabase } from '../lib/canvasApi';
+import ShareButton from '../components/ShareButton';
+import SignupBanner from '../components/SignupBanner';
 
 // Global state for background pattern
 if (!window.canvasBgPattern) {
@@ -157,7 +167,9 @@ const FindWidget = ({ editor }) => {
   );
 };
 
-const CustomGrid = ({ x, y, z, size }) => {
+const CustomBackground = () => {
+  const editor = useEditor();
+  const camera = useValue('camera', () => editor?.getCamera(), [editor]);
   const [pattern, setPattern] = useState(window.canvasBgPattern);
   
   useEffect(() => {
@@ -166,46 +178,55 @@ const CustomGrid = ({ x, y, z, size }) => {
     return () => window.removeEventListener('bgPatternChanged', handlePatternChange);
   }, []);
 
-  const s = size * z;
-  const xo = x * z;
-  const yo = y * z;
+  if (!camera || pattern === 'none') return null;
+
+  const size = 24; // Default Tldraw grid size
+  const s = size * camera.z;
+  const xo = camera.x * camera.z;
+  const yo = camera.y * camera.z;
 
   if (pattern === 'lines') {
     return (
-      <svg className="tl-grid" version="1.1" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id="grid_lines" width={s} height={s} patternUnits="userSpaceOnUse" patternTransform={`translate(${xo}, ${yo})`}>
-            <line x1="0" y1="0" x2={s} y2="0" stroke="#e2e8f0" strokeWidth="1.5" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#grid_lines)" />
-      </svg>
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <svg width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="bg_grid_lines" width={s} height={s} patternUnits="userSpaceOnUse" patternTransform={`translate(${xo}, ${yo})`}>
+              <line x1="0" y1="0" x2={s} y2="0" stroke="#e2e8f0" strokeWidth="1.5" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#bg_grid_lines)" />
+        </svg>
+      </div>
     );
   }
 
   if (pattern === 'grid') {
     return (
-      <svg className="tl-grid" version="1.1" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id="grid_cross" width={s} height={s} patternUnits="userSpaceOnUse" patternTransform={`translate(${xo}, ${yo})`}>
-            <path d={`M ${s} 0 L 0 0 0 ${s}`} fill="none" stroke="#e2e8f0" strokeWidth="1.5" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="url(#grid_cross)" />
-      </svg>
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <svg width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="bg_grid_cross" width={s} height={s} patternUnits="userSpaceOnUse" patternTransform={`translate(${xo}, ${yo})`}>
+              <path d={`M ${s} 0 L 0 0 0 ${s}`} fill="none" stroke="#e2e8f0" strokeWidth="1.5" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#bg_grid_cross)" />
+        </svg>
+      </div>
     );
   }
 
   // dots
   return (
-    <svg className="tl-grid" version="1.1" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="grid_dots" width={s} height={s} patternUnits="userSpaceOnUse" patternTransform={`translate(${xo}, ${yo})`}>
-          <circle cx="1" cy="1" r={1.5} fill="#cbd5e1" />
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#grid_dots)" />
-    </svg>
+    <div className="absolute inset-0 pointer-events-none z-0">
+      <svg width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="bg_grid_dots" width={s} height={s} patternUnits="userSpaceOnUse" patternTransform={`translate(${xo}, ${yo})`}>
+            <circle cx="1" cy="1" r={1.5} fill="#cbd5e1" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#bg_grid_dots)" />
+      </svg>
+    </div>
   );
 };
 
@@ -286,14 +307,18 @@ const CustomContextMenu = () => {
 const BackgroundSwitcher = ({ editor }) => {
   const [pattern, setPattern] = useState(window.canvasBgPattern);
   const [isLocked, setIsLocked] = useState(window.canvasIsLocked || false);
+  const [isSnapMode, setIsSnapMode] = useState(window.canvasIsSnapMode || false);
+
+  useEffect(() => {
+    if (editor) {
+      editor.updateInstanceState({ isGridMode: window.canvasIsSnapMode || false });
+    }
+  }, [editor]);
 
   const changePattern = (newPattern) => {
     window.canvasBgPattern = newPattern;
     setPattern(newPattern);
     window.dispatchEvent(new Event('bgPatternChanged'));
-    if (editor) {
-      editor.updateInstanceState({ isGridMode: newPattern !== 'none' });
-    }
   };
 
   const toggleLock = () => {
@@ -301,6 +326,15 @@ const BackgroundSwitcher = ({ editor }) => {
     setIsLocked(newLocked);
     window.canvasIsLocked = newLocked;
     window.dispatchEvent(new CustomEvent('canvasLockToggled', { detail: newLocked }));
+  };
+
+  const toggleSnapMode = () => {
+    const newSnapMode = !isSnapMode;
+    setIsSnapMode(newSnapMode);
+    window.canvasIsSnapMode = newSnapMode;
+    if (editor) {
+      editor.updateInstanceState({ isGridMode: newSnapMode });
+    }
   };
 
   return (
@@ -318,6 +352,13 @@ const BackgroundSwitcher = ({ editor }) => {
       ))}
       <div className="w-px h-4 bg-gray-300 mx-1"></div>
       <button 
+         onClick={toggleSnapMode} 
+         className={`p-1.5 rounded-xl transition-colors ${isSnapMode ? 'text-blue-500 bg-blue-50 hover:bg-blue-100' : 'text-gray-500 hover:bg-gray-50'}`} 
+         title="Snap to Grid"
+      >
+        <Magnet size={14} />
+      </button>
+      <button 
          onClick={toggleLock} 
          className={`p-1.5 rounded-xl transition-colors ${isLocked ? 'text-red-500 bg-red-50 hover:bg-red-100' : 'text-gray-500 hover:bg-gray-50'}`} 
          title="Lock Canvas"
@@ -328,9 +369,85 @@ const BackgroundSwitcher = ({ editor }) => {
   );
 };
 
+const debouncedSave = debounce((canvasId, data) => {
+  saveCanvasToSupabase(canvasId, data);
+}, 1500);
+
 const MainCanvas = ({ page, setPage }) => {
-  const storeWithStatus = useYjsStore('global-room');
+  const { canvasId } = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isNew = new URLSearchParams(location.search).get('new') === 'true';
+
   const [editor, setEditor] = useState(null);
+  const [store, setStore] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let currentStore = createTLStore({ shapeUtils: defaultShapeUtils });
+    let unlisten = null;
+
+    async function initCanvas() {
+      try {
+        setLoading(true);
+        setError(false);
+        
+        // 1. Load local data for instant offline-first display
+        let localData = await get(`canvas-${canvasId}`);
+        if (localData) {
+          loadSnapshot(currentStore, localData);
+        }
+        
+        // 2. ALWAYS fetch from Supabase to ensure we get the latest changes from others
+        let remoteData = null;
+        try {
+          remoteData = await fetchCanvasFromSupabase(canvasId);
+        } catch (e) {
+          console.warn("Could not fetch from Supabase, relying on local cache.", e);
+        }
+
+        if (remoteData) {
+          // Overwrite local store with the freshest cloud data
+          loadSnapshot(currentStore, remoteData);
+          // Update our local cache with the new cloud data
+          set(`canvas-${canvasId}`, remoteData).catch(console.error);
+        } else if (!localData && !isNew) {
+          // If no local data, no remote data, and it's not a newly generated URL = dead link
+          setError(true);
+          setLoading(false);
+          return;
+        }
+
+        setStore(currentStore);
+
+        // Listen for changes to save
+        unlisten = currentStore.listen(
+          () => {
+            const snapshot = getSnapshot(currentStore);
+            
+            // Instant local save
+            set(`canvas-${canvasId}`, snapshot).catch(console.error);
+            
+            // Debounced remote save
+            debouncedSave(canvasId, snapshot);
+          },
+          { source: 'user', scope: 'document' }
+        );
+      } catch (err) {
+        console.error("Failed to load canvas:", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    initCanvas();
+
+    return () => {
+      if (unlisten) unlisten();
+    };
+  }, [canvasId, isNew]);
 
   useEffect(() => {
     const handleLock = (e) => {
@@ -342,16 +459,38 @@ const MainCanvas = ({ page, setPage }) => {
     return () => window.removeEventListener('canvasLockToggled', handleLock);
   }, [editor]);
 
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-gray-50 h-full w-full">
+        <div className="text-gray-400 font-medium">Loading Canvas...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 h-full w-full gap-4">
+        <h2 className="text-xl font-bold text-gray-800">This canvas has expired or doesn't exist</h2>
+        <button 
+          onClick={() => navigate('/')} 
+          className="bg-blue-500 text-white px-5 py-2.5 rounded-xl font-medium shadow-sm hover:bg-blue-600 transition-colors"
+        >
+          Start a new canvas
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col bg-white overflow-hidden relative w-full h-full">
       {/* Tldraw Infinite Canvas Component */}
       <div className="absolute inset-0 z-0">
         <Tldraw 
-          store={storeWithStatus.store} 
+          store={store} 
           onMount={(ed) => {
             setEditor(ed);
             ed.updateInstanceState({ 
-              isGridMode: window.canvasBgPattern !== 'none',
+              isGridMode: window.canvasIsSnapMode || false,
               isReadonly: window.canvasIsLocked || false
             });
           }}
@@ -359,13 +498,20 @@ const MainCanvas = ({ page, setPage }) => {
             Minimap: null,
             MainMenu: CustomMainMenu,
             ContextMenu: CustomContextMenu,
-            Grid: CustomGrid,
+            Grid: null,
+            Background: CustomBackground,
             StylePanel: CustomStylePanel
           }}
         />
         {/* Custom UI Overlays */}
         <BackgroundSwitcher editor={editor} />
         <FindWidget editor={editor} />
+        
+        {/* Top-Right Overlays */}
+        <div className="absolute top-4 right-4 z-[250] flex flex-col items-end gap-2 pointer-events-auto">
+          <ShareButton />
+        </div>
+        <SignupBanner />
       </div>
     </div>
   );

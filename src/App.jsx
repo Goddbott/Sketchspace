@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { Sun, Moon } from 'lucide-react';
 
@@ -11,7 +11,6 @@ function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Parse path to simulate "activePage" from mockup for the top tab bar
   let activePage = 'Landing';
   if (location.pathname.startsWith('/dashboard')) activePage = 'Dashboard';
   if (location.pathname.startsWith('/canvas')) activePage = 'Canvas';
@@ -21,38 +20,44 @@ function AppLayout() {
   const handleTabClick = (tab) => {
     if (tab === 'Landing') navigate('/');
     if (tab === 'Dashboard') navigate('/dashboard');
-    if (tab === 'Canvas') navigate('/canvas/new');
+    // If clicking canvas directly from tabs without ID, it will redirect to / which redirects to a new canvas
+    if (tab === 'Canvas') navigate('/');
   };
 
   return (
     <div className={`w-screen h-screen overflow-hidden flex relative font-sans transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-900'} p-3 sm:p-2`}>
       
       {/* Global Navigation Tab Bar (Moved to bottom right to avoid conflicts) */}
-      <div className="absolute bottom-5 right-5 flex items-center gap-1 bg-white p-1.5 rounded-2xl shadow-md border border-gray-200 z-[60]">
-        {tabs.map(tab => (
-          <button 
+      <div className="absolute bottom-6 right-6 z-50 flex bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/50 p-1 pointer-events-auto">
+        {tabs.map((tab) => (
+          <button
             key={tab}
             onClick={() => handleTabClick(tab)}
-            className={`px-4 py-1.5 text-xs font-semibold rounded-xl transition-colors ${activePage === tab ? 'bg-gray-900 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+            className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+              activePage === tab
+                ? 'bg-blue-500 text-white shadow-sm shadow-blue-500/20'
+                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100/50'
+            }`}
           >
             {tab}
           </button>
         ))}
-        <div className="w-px h-4 bg-gray-300 mx-2"></div>
-        <button onClick={() => setDarkMode(!darkMode)} className="p-1.5 text-gray-500 hover:bg-gray-100 rounded-xl mr-1" title="Toggle Theme">
-          {darkMode ? <Sun size={14} /> : <Moon size={14} />}
+        <div className="w-px h-6 bg-gray-200 my-auto mx-2"></div>
+        <button 
+          onClick={() => setDarkMode(!darkMode)}
+          className="p-2 rounded-xl text-gray-500 hover:bg-gray-100/50 transition-colors"
+        >
+          {darkMode ? <Sun size={18} /> : <Moon size={18} />}
         </button>
       </div>
 
-      {/* App Container Frame (Full Screen with curved inner bezel) */}
-      <div className={`w-full h-full flex relative overflow-hidden rounded-3xl bg-white shadow-2xl`}>
+      <div className="flex-1 flex overflow-hidden rounded-2xl shadow-xl shadow-black/5 bg-white border border-gray-200/50">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/canvas/:id" element={<CanvasPage page="Canvas" setPage={() => {}} />} />
+          <Route path="/canvas/:canvasId" element={<CanvasPage />} />
         </Routes>
       </div>
-
     </div>
   );
 }
