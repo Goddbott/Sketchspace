@@ -503,6 +503,10 @@ const CanvasMetadataUI = ({ canvasMeta, setCanvasMeta, allTags, setAllTags, user
   );
 };
 
+import { useYjsStore } from '../hooks/useYjsStore';
+import { generateUserIdentity } from '../utils/identity';
+import { Cursors } from '../components/Cursors';
+
 const MainCanvas = ({ page, setPage }) => {
   const { canvasId } = useParams();
   const navigate = useNavigate();
@@ -510,15 +514,9 @@ const MainCanvas = ({ page, setPage }) => {
   const isNew = new URLSearchParams(location.search).get('new') === 'true';
   const { user } = useAuth();
   
-  const userIdRef = useRef(user?.id);
-  useEffect(() => {
-    userIdRef.current = user?.id;
-  }, [user?.id]);
-
   const [editor, setEditor] = useState(null);
   const editorRef = useRef(null);
-  const [store, setStore] = useState(null);
-  const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState(false);
 
   const [canvasMeta, setCanvasMeta] = useState(null);
@@ -572,7 +570,6 @@ const MainCanvas = ({ page, setPage }) => {
         if (currentAccess === 'denied') {
           setAccessDenied(true);
           setError(true);
-          setLoading(false);
           return;
         }
 
@@ -639,85 +636,60 @@ const MainCanvas = ({ page, setPage }) => {
     []
   );
 
-  useEffect(() => {
-    // Don't start loading until access level has been determined
-    if (accessLevel === 'loading') return;
-    
-    // If access was denied, don't try to load canvas data at all
-    if (accessDenied) return;
+  const fetchCanvasFallback = useCallback(async () => {
+    // Return null if access is denied, otherwise fetch from Supabase
+    if (accessDenied || accessLevel === 'loading') return null;
+    return await fetchCanvasFromSupabase(canvasId);
+  }, [canvasId, accessDenied, accessLevel]);
 
-    let currentStore = createTLStore({ shapeUtils: defaultShapeUtils });
+  // STEP 1: Assign identity to each connected user
+  const [identity] = useState(() => generateUserIdentity(user));
+
+  // STEP 2, 3, 4, 6: Connect to Yjs, load IndexedDB, fallback to Supabase if empty
+  const storeWithStatus = useYjsStore(canvasId, fetchCanvasFallback, identity);
+
+  const userIdRef = useRef(user?.id);
+  useEffect(() => {
+    userIdRef.current = user?.id;
+  }, [user?.id]);
+
+  
+  
+  // We no longer need local `loading` or `error` state for the canvas data,
+  // we rely on `storeWithStatus.status` and `accessLevel`.
+
+  const checkIsLeader = useCallback(() => {
+    const provider = storeWithStatus.provider;
+    if (!provider || !provider.awareness) return true; // Default to true if no multiplayer
+    const states = Array.from(provider.awareness.getStates().keys());
+    if (states.length === 0) return true;
+    states.sort(); // Sort by clientID
+    return states[0] === provider.awareness.clientID;
+  }, [storeWithStatus.provider]);
+
+  useEffect(() => {
+    if (accessLevel === 'loading' || accessDenied) return;
+    if (storeWithStatus.status === 'loading') return;
+
     let unlisten = null;
 
-    async function initCanvas() {
-      try {
-        setLoading(true);
-        setError(false);
-        
-        // 1. Load local data for instant offline-first display
-        let localData = await get(`canvas-${canvasId}`);
-        if (localData) {
-          loadSnapshot(currentStore, localData);
-        }
-        
-        // 2. ALWAYS fetch from Supabase to ensure we get the latest changes from others
-        let remoteData = null;
-        try {
-          remoteData = await fetchCanvasFromSupabase(canvasId);
-        } catch (e) {
-          console.warn("Could not fetch from Supabase, relying on local cache.", e);
-        }
-
-        if (remoteData?.expired) {
-          // Canvas has expired. Wipe any local cache to enforce soft expiry.
-          await del(`canvas-${canvasId}`);
-          setError(true);
-          setLoading(false);
-          return;
-        } else if (remoteData) {
-          // Overwrite local store with the freshest cloud data
-          loadSnapshot(currentStore, remoteData);
-          // Update our local cache with the new cloud data
-          set(`canvas-${canvasId}`, remoteData).catch(console.error);
-        } else if (!localData && !isNew) {
-          // If no local data, no remote data, and it's not a newly generated URL = dead link
-          setError(true);
-          setLoading(false);
-          return;
-        }
-
-        setStore(currentStore);
-
-        // Listen for changes to save (only if user has edit access)
-        if (accessLevel === 'owner' || accessLevel === 'editor') {
-          unlisten = currentStore.listen(
-            () => {
-              const snapshot = getSnapshot(currentStore);
-              
-              // Instant local save
-              set(`canvas-${canvasId}`, snapshot).catch(console.error);
-              
-              // Debounced remote save with fallback owner ID
-              debouncedSave(canvasId, snapshot, userIdRef.current);
-            },
-            { source: 'user', scope: 'document' }
-          );
-        }
-      } catch (err) {
-        console.error("Failed to load canvas:", err);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
+    // STEP 5: Leader-based periodic saving
+    if (accessLevel === 'owner' || accessLevel === 'editor') {
+      unlisten = storeWithStatus.store.listen(
+        () => {
+          if (!checkIsLeader()) return;
+          const snapshot = getSnapshot(storeWithStatus.store);
+          debouncedSave(canvasId, snapshot, userIdRef.current);
+        },
+        { source: 'user', scope: 'document' }
+      );
     }
-
-    initCanvas();
 
     return () => {
       if (unlisten) unlisten();
       debouncedSave.cancel();
     };
-  }, [canvasId, isNew, debouncedSave, accessLevel, accessDenied]);
+  }, [canvasId, accessLevel, accessDenied, storeWithStatus.status, storeWithStatus.store, checkIsLeader, debouncedSave]);
 
   useEffect(() => {
     if (editor && accessLevel !== 'loading') {
@@ -735,7 +707,7 @@ const MainCanvas = ({ page, setPage }) => {
     return () => window.removeEventListener('canvasLockToggled', handleLock);
   }, [editor]);
 
-  if (loading) {
+  if (accessLevel === 'loading' || storeWithStatus.status === 'loading') {
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-50 h-full w-full">
         <div className="text-gray-400 font-medium">Loading Canvas...</div>
@@ -769,7 +741,7 @@ const MainCanvas = ({ page, setPage }) => {
       {/* Tldraw Infinite Canvas Component */}
       <div className="absolute inset-0 z-0">
         <Tldraw 
-          store={store} 
+          store={storeWithStatus.store} 
           onMount={(ed) => {
             setEditor(ed);
             editorRef.current = ed;
@@ -799,6 +771,9 @@ const MainCanvas = ({ page, setPage }) => {
           user={user} 
         />
         
+        {/* STEP 3, 4, 5, 6: Multiplayer Cursors Overlay */}
+        <Cursors editor={editor} awareness={storeWithStatus.provider?.awareness} />
+
         <SignupBanner canvasId={canvasId} />
       </div>
     </div>
