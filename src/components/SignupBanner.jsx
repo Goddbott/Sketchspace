@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, AlertCircle } from 'lucide-react';
+import { useAuth } from '../lib/AuthContext';
 
-export default function SignupBanner() {
+export default function SignupBanner({ canvasId }) {
   const [isVisible, setIsVisible] = useState(true);
   const navigate = useNavigate();
-
-  // Eventually check if user is logged in via Supabase Auth here
-  const user = null; 
+  const { user } = useAuth();
 
   if (!isVisible || user) return null;
 
@@ -29,7 +28,7 @@ export default function SignupBanner() {
       </div>
       <div className="flex justify-end mt-1">
         <button 
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate(canvasId ? `/auth?migrate=${canvasId}` : '/auth')}
           className="text-xs font-semibold bg-gray-900 text-white px-3 py-1.5 rounded-lg hover:bg-gray-800 transition-colors"
         >
           Sign up to save forever

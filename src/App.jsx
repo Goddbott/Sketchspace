@@ -5,21 +5,31 @@ import { Sun, Moon } from 'lucide-react';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import CanvasPage from './pages/CanvasPage';
+import AuthPage from './pages/AuthPage';
+import { AuthProvider, useAuth } from './lib/AuthContext';
 
 function AppLayout() {
   const [darkMode, setDarkMode] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   let activePage = 'Landing';
   if (location.pathname.startsWith('/dashboard')) activePage = 'Dashboard';
   if (location.pathname.startsWith('/canvas')) activePage = 'Canvas';
+  if (location.pathname.startsWith('/auth')) activePage = 'Auth';
 
   const tabs = ['Landing', 'Canvas', 'Dashboard'];
 
   const handleTabClick = (tab) => {
     if (tab === 'Landing') navigate('/');
-    if (tab === 'Dashboard') navigate('/dashboard');
+    if (tab === 'Dashboard') {
+      if (user) {
+        navigate('/dashboard');
+      } else {
+        navigate('/auth');
+      }
+    }
     // If clicking canvas directly from tabs without ID, it will redirect to / which redirects to a new canvas
     if (tab === 'Canvas') navigate('/');
   };
@@ -34,7 +44,7 @@ function AppLayout() {
             key={tab}
             onClick={() => handleTabClick(tab)}
             className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-              activePage === tab
+              activePage === tab || (activePage === 'Auth' && tab === 'Dashboard')
                 ? 'bg-blue-500 text-white shadow-sm shadow-blue-500/20'
                 : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100/50'
             }`}
@@ -54,6 +64,7 @@ function AppLayout() {
       <div className="flex-1 flex overflow-hidden rounded-2xl shadow-xl shadow-black/5 bg-white border border-gray-200/50">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/auth" element={<AuthPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/canvas/:canvasId" element={<CanvasPage />} />
         </Routes>
@@ -64,8 +75,10 @@ function AppLayout() {
 
 export default function App() {
   return (
-    <Router>
-      <AppLayout />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <AppLayout />
+      </Router>
+    </AuthProvider>
   );
 }

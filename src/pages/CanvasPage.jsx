@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Tldraw, 
   DefaultContextMenu, 
@@ -19,11 +19,23 @@ import { Lock, Unlock, Search, ChevronUp, ChevronDown, X, Magnet } from 'lucide-
 import 'tldraw/tldraw.css';
 
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { get, set } from 'idb-keyval';
+import { get, set, del } from 'idb-keyval';
 import debounce from 'lodash.debounce';
-import { fetchCanvasFromSupabase, saveCanvasToSupabase } from '../lib/canvasApi';
+import { fetchCanvasFromSupabase, saveCanvasToSupabase, uploadThumbnail, updateCanvas, createTag, assignTagToCanvas, removeTagFromCanvas } from '../lib/canvasApi';
+import { supabase } from '../lib/supabase';
 import ShareButton from '../components/ShareButton';
 import SignupBanner from '../components/SignupBanner';
+import TagSelector from '../components/TagSelector';
+import { useAuth } from '../lib/AuthContext';
+
+function stringToColor(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash % 360);
+  return `hsl(${hue}, 70%, 50%)`;
+}
 
 // Global state for background pattern
 if (!window.canvasBgPattern) {
@@ -304,7 +316,40 @@ const CustomContextMenu = () => {
   );
 };
 
-const BackgroundSwitcher = ({ editor }) => {
+const CustomZoomMenu = () => {
+  const editor = useEditor();
+  const zoomLevel = useValue('zoom', () => editor.getZoomLevel(), [editor]);
+
+  return (
+    <div className="absolute bottom-4 left-4 z-[300] bg-white rounded-xl shadow-sm border border-gray-200 flex items-center p-1 gap-1 pointer-events-auto h-10">
+      <button
+        onClick={() => editor.zoomOut()}
+        className="w-8 h-8 flex flex-shrink-0 items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-[8px] transition-colors"
+        title="Zoom Out"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      </button>
+      
+      <button 
+        onClick={() => editor.resetZoom()}
+        className="px-1 text-[13px] font-semibold text-gray-800 min-w-[3rem] text-center hover:bg-gray-100 rounded-[8px] h-8 transition-colors flex-shrink-0"
+        title="Reset Zoom"
+      >
+        {Math.round(zoomLevel * 100)}%
+      </button>
+
+      <button
+        onClick={() => editor.zoomIn()}
+        className="w-8 h-8 flex flex-shrink-0 items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-[8px] transition-colors"
+        title="Zoom In"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      </button>
+    </div>
+  );
+};
+
+const BackgroundSwitcher = ({ editor, canvasMeta, setCanvasMeta, user }) => {
   const [pattern, setPattern] = useState(window.canvasBgPattern);
   const [isLocked, setIsLocked] = useState(window.canvasIsLocked || false);
   const [isSnapMode, setIsSnapMode] = useState(window.canvasIsSnapMode || false);
@@ -358,6 +403,8 @@ const BackgroundSwitcher = ({ editor }) => {
       >
         <Magnet size={14} />
       </button>
+      <div className="w-px h-4 bg-gray-300 mx-1"></div>
+      <ShareButton canvasMeta={canvasMeta} setCanvasMeta={setCanvasMeta} user={user} />
       <button 
          onClick={toggleLock} 
          className={`p-1.5 rounded-xl transition-colors ${isLocked ? 'text-red-500 bg-red-50 hover:bg-red-100' : 'text-gray-500 hover:bg-gray-50'}`} 
@@ -369,22 +416,236 @@ const BackgroundSwitcher = ({ editor }) => {
   );
 };
 
-const debouncedSave = debounce((canvasId, data) => {
-  saveCanvasToSupabase(canvasId, data);
-}, 1500);
+const CanvasMetadataUI = ({ canvasMeta, setCanvasMeta, allTags, setAllTags, user }) => {
+  const [isAddingTag, setIsAddingTag] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameVal, setNameVal] = useState(canvasMeta?.name || 'Untitled Canvas');
+
+  if (!canvasMeta) return null;
+
+  const handleRename = async () => {
+    if (nameVal.trim() !== '' && nameVal !== canvasMeta.name) {
+      setCanvasMeta(prev => ({ ...prev, name: nameVal.trim() }));
+      await updateCanvas(canvasMeta.id, { name: nameVal.trim() });
+    } else {
+      setNameVal(canvasMeta.name || 'Untitled Canvas');
+    }
+    setIsEditingName(false);
+  };
+
+  const handleAddTag = async (tagName) => {
+    if (!user) return; // Anonymous can't tag
+    
+    let tag = allTags.find(t => t.name.toLowerCase() === tagName.toLowerCase());
+    if (!tag) {
+      try {
+        const color = stringToColor(tagName);
+        tag = await createTag(user.id, tagName, color);
+        setAllTags(prev => [...prev, tag]);
+      } catch (e) {
+        console.error(e);
+        return;
+      }
+    }
+
+    if (canvasMeta.tags.some(t => t.id === tag.id)) return;
+
+    setCanvasMeta(prev => ({ ...prev, tags: [...prev.tags, tag] }));
+    await assignTagToCanvas(canvasMeta.id, tag.id);
+  };
+
+  const handleRemoveTag = async (tagId) => {
+    setCanvasMeta(prev => ({ ...prev, tags: prev.tags.filter(t => t.id !== tagId) }));
+    await removeTagFromCanvas(canvasMeta.id, tagId);
+  };
+
+  return (
+    <div className="absolute top-20 left-4 z-[250] bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-sm border border-gray-200 pointer-events-auto flex flex-col gap-2 max-w-[250px]">
+      {isEditingName ? (
+        <input 
+          autoFocus
+          value={nameVal}
+          onChange={e => setNameVal(e.target.value)}
+          onBlur={handleRename}
+          onKeyDown={e => { if (e.key === 'Enter') handleRename(); if (e.key === 'Escape') { setIsEditingName(false); setNameVal(canvasMeta.name || 'Untitled Canvas'); } }}
+          className="font-bold text-gray-900 bg-transparent outline-none border-b border-blue-500 pb-0.5"
+        />
+      ) : (
+        <div 
+          onClick={() => setIsEditingName(true)}
+          className="font-bold text-gray-900 truncate cursor-pointer hover:text-blue-600 transition-colors"
+          title="Click to rename"
+        >
+          {canvasMeta.name || 'Untitled Canvas'}
+        </div>
+      )}
+      
+      <div className="flex flex-wrap gap-1 items-center">
+        <TagSelector 
+          assignedTags={canvasMeta.tags || []}
+          availableTags={allTags}
+          onAddTag={handleAddTag}
+          onRemoveTag={handleRemoveTag}
+          isAdding={isAddingTag}
+          setIsAdding={setIsAddingTag}
+        />
+        {user && !isAddingTag && (
+          <button 
+            onClick={() => setIsAddingTag(true)}
+            className="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+            title="Add tag"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const MainCanvas = ({ page, setPage }) => {
   const { canvasId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const isNew = new URLSearchParams(location.search).get('new') === 'true';
+  const { user } = useAuth();
+  
+  const userIdRef = useRef(user?.id);
+  useEffect(() => {
+    userIdRef.current = user?.id;
+  }, [user?.id]);
 
   const [editor, setEditor] = useState(null);
+  const editorRef = useRef(null);
   const [store, setStore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
+  const [canvasMeta, setCanvasMeta] = useState(null);
+  const [allTags, setAllTags] = useState([]);
+  const [accessLevel, setAccessLevel] = useState('loading'); // 'owner', 'editor', 'viewer', 'denied'
+  const [accessDenied, setAccessDenied] = useState(false);
+
   useEffect(() => {
+    async function fetchMeta() {
+      const { data, error: fetchErr } = await supabase
+        .from('canvases')
+        .select('*, canvas_tags(tags(*)), canvas_collaborators(*)')
+        .eq('id', canvasId)
+        .single();
+
+      if (data) {
+        // Automatically claim canvas if it was accidentally saved as anonymous
+        if (!data.owner_id && user?.id) {
+          const { data: updatedRows, error: claimErr } = await supabase
+            .from('canvases')
+            .update({ owner_id: user.id, is_anonymous: false })
+            .eq('id', canvasId)
+            .select();
+            
+          if (claimErr) {
+            console.error("Failed to claim canvas:", claimErr);
+          } else if (updatedRows && updatedRows.length > 0) {
+            data.owner_id = user.id;
+            data.is_anonymous = false;
+          }
+        }
+
+        // Evaluate access
+        let currentAccess = 'denied';
+        if (!data.owner_id) {
+          currentAccess = 'editor';
+        } else if (user?.id === data.owner_id) {
+          currentAccess = 'owner';
+        } else {
+          const collab = (data.canvas_collaborators || []).find(c => c.email?.toLowerCase() === user?.email?.toLowerCase());
+          if (collab) {
+            currentAccess = collab.role;
+          } else if (data.canvas_access === 'edit') {
+            currentAccess = 'editor';
+          } else if (data.canvas_access === 'view') {
+            currentAccess = 'viewer';
+          }
+        }
+
+        setAccessLevel(currentAccess);
+        if (currentAccess === 'denied') {
+          setAccessDenied(true);
+          setError(true);
+          setLoading(false);
+          return;
+        }
+
+        const tags = data.canvas_tags ? data.canvas_tags.map(ct => ct.tags).filter(Boolean) : [];
+        setCanvasMeta({ ...data, tags, canvas_collaborators: data.canvas_collaborators || [] });
+      } else {
+        if (!isNew) {
+          setError(true);
+        } else {
+          setAccessLevel(user?.id ? 'owner' : 'editor');
+          setCanvasMeta({
+            id: canvasId,
+            owner_id: user?.id || null,
+            canvas_access: 'edit',
+            canvas_collaborators: [],
+            name: 'Untitled Canvas',
+            is_anonymous: !user?.id
+          });
+        }
+      }
+      
+      if (user?.id) {
+        const { data: userTags } = await supabase
+          .from('tags')
+          .select('*')
+          .eq('owner_id', user.id);
+        if (userTags) setAllTags(userTags);
+      }
+    }
+    fetchMeta();
+  }, [canvasId, user?.id]);
+
+  // Debounced save with thumbnail generation
+  const debouncedSave = useCallback(
+    debounce(async (id, snapshot, ownerIdFallback) => {
+      let thumbnailUrl = null;
+      const currentEditor = editorRef.current;
+      
+      // GUARANTEE we have the absolute latest auth state right before network request
+      const { data: { session } } = await supabase.auth.getSession();
+      const currentOwnerId = session?.user?.id || ownerIdFallback || null;
+
+      if (currentEditor) {
+        const shapeIds = Array.from(currentEditor.getCurrentPageShapeIds());
+        if (shapeIds.length > 0) {
+          try {
+            // Generate SVG thumbnail silently in the background
+            const svgResult = await currentEditor.getSvgString(shapeIds, { background: true, padding: 32 });
+            
+            if (svgResult?.svg) {
+              // Encode SVG directly as a data URI to bypass Supabase Storage issues
+              thumbnailUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgResult.svg)}`;
+            }
+          } catch (e) {
+            console.error("Failed to generate thumbnail:", e);
+            // Non-fatal, continue with save
+          }
+        }
+      }
+
+      // Save canvas data and thumbnail URL
+      saveCanvasToSupabase(id, snapshot, currentOwnerId, thumbnailUrl);
+    }, 1500),
+    []
+  );
+
+  useEffect(() => {
+    // Don't start loading until access level has been determined
+    if (accessLevel === 'loading') return;
+    
+    // If access was denied, don't try to load canvas data at all
+    if (accessDenied) return;
+
     let currentStore = createTLStore({ shapeUtils: defaultShapeUtils });
     let unlisten = null;
 
@@ -407,7 +668,13 @@ const MainCanvas = ({ page, setPage }) => {
           console.warn("Could not fetch from Supabase, relying on local cache.", e);
         }
 
-        if (remoteData) {
+        if (remoteData?.expired) {
+          // Canvas has expired. Wipe any local cache to enforce soft expiry.
+          await del(`canvas-${canvasId}`);
+          setError(true);
+          setLoading(false);
+          return;
+        } else if (remoteData) {
           // Overwrite local store with the freshest cloud data
           loadSnapshot(currentStore, remoteData);
           // Update our local cache with the new cloud data
@@ -421,19 +688,21 @@ const MainCanvas = ({ page, setPage }) => {
 
         setStore(currentStore);
 
-        // Listen for changes to save
-        unlisten = currentStore.listen(
-          () => {
-            const snapshot = getSnapshot(currentStore);
-            
-            // Instant local save
-            set(`canvas-${canvasId}`, snapshot).catch(console.error);
-            
-            // Debounced remote save
-            debouncedSave(canvasId, snapshot);
-          },
-          { source: 'user', scope: 'document' }
-        );
+        // Listen for changes to save (only if user has edit access)
+        if (accessLevel === 'owner' || accessLevel === 'editor') {
+          unlisten = currentStore.listen(
+            () => {
+              const snapshot = getSnapshot(currentStore);
+              
+              // Instant local save
+              set(`canvas-${canvasId}`, snapshot).catch(console.error);
+              
+              // Debounced remote save with fallback owner ID
+              debouncedSave(canvasId, snapshot, userIdRef.current);
+            },
+            { source: 'user', scope: 'document' }
+          );
+        }
       } catch (err) {
         console.error("Failed to load canvas:", err);
         setError(true);
@@ -446,8 +715,15 @@ const MainCanvas = ({ page, setPage }) => {
 
     return () => {
       if (unlisten) unlisten();
+      debouncedSave.cancel();
     };
-  }, [canvasId, isNew]);
+  }, [canvasId, isNew, debouncedSave, accessLevel, accessDenied]);
+
+  useEffect(() => {
+    if (editor && accessLevel !== 'loading') {
+      editor.updateInstanceState({ isReadonly: accessLevel === 'viewer' || window.canvasIsLocked || false });
+    }
+  }, [editor, accessLevel]);
 
   useEffect(() => {
     const handleLock = (e) => {
@@ -470,7 +746,14 @@ const MainCanvas = ({ page, setPage }) => {
   if (error) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 h-full w-full gap-4">
-        <h2 className="text-xl font-bold text-gray-800">This canvas has expired or doesn't exist</h2>
+        <h2 className="text-xl font-bold text-gray-800">
+          {accessDenied ? "This canvas is private" : "This canvas has expired or doesn't exist"}
+        </h2>
+        <p className="text-gray-500 text-sm max-w-sm text-center">
+          {accessDenied 
+            ? "You don't have permission to view this canvas. Request access from the owner or make sure you are logged in with the invited email." 
+            : ""}
+        </p>
         <button 
           onClick={() => navigate('/')} 
           className="bg-blue-500 text-white px-5 py-2.5 rounded-xl font-medium shadow-sm hover:bg-blue-600 transition-colors"
@@ -489,9 +772,10 @@ const MainCanvas = ({ page, setPage }) => {
           store={store} 
           onMount={(ed) => {
             setEditor(ed);
+            editorRef.current = ed;
             ed.updateInstanceState({ 
               isGridMode: window.canvasIsSnapMode || false,
-              isReadonly: window.canvasIsLocked || false
+              isReadonly: accessLevel === 'viewer' || window.canvasIsLocked || false
             });
           }}
           components={{ 
@@ -500,18 +784,22 @@ const MainCanvas = ({ page, setPage }) => {
             ContextMenu: CustomContextMenu,
             Grid: null,
             Background: CustomBackground,
-            StylePanel: CustomStylePanel
+            StylePanel: CustomStylePanel,
+            NavigationPanel: CustomZoomMenu
           }}
         />
         {/* Custom UI Overlays */}
-        <BackgroundSwitcher editor={editor} />
+        <BackgroundSwitcher editor={editor} canvasMeta={canvasMeta} setCanvasMeta={setCanvasMeta} user={user} />
         <FindWidget editor={editor} />
+        <CanvasMetadataUI 
+          canvasMeta={canvasMeta} 
+          setCanvasMeta={setCanvasMeta} 
+          allTags={allTags} 
+          setAllTags={setAllTags} 
+          user={user} 
+        />
         
-        {/* Top-Right Overlays */}
-        <div className="absolute top-4 right-4 z-[250] flex flex-col items-end gap-2 pointer-events-auto">
-          <ShareButton />
-        </div>
-        <SignupBanner />
+        <SignupBanner canvasId={canvasId} />
       </div>
     </div>
   );
