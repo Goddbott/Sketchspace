@@ -74,7 +74,7 @@
 .tlui-style-panel .tlui-toolbar:has([data-testid="style.size"])::before { content: 'Stroke Width'; }
 .tlui-style-panel .tlui-toolbar:has([data-testid="style.font"])::before { content: 'Font Style'; }
 .tlui-style-panel .tlui-toolbar:has([data-testid="style.align"])::before { content: 'Text Alignment'; }
-.tlui-style-panel .tlui-toolbar:has([data-testid="style.verticalAlign"])::before { content: 'Vertical Alignment'; }
+.tlui-style-panel .tlui-toolbar:has([data-testid="style.verticalAlign"])::before { content: "Shape's Text Alignment"; }
 
 /* Fix opacity slider container and label */
 .tlui-style-panel .tlui-slider__container {
@@ -118,6 +118,8 @@
 /* Detach top-right style panel from the edge */
 .tlui-style-panel__wrapper {
   margin: 12px !important;
+  max-height: calc(100vh - 280px) !important;
+  overflow-y: auto !important;
 }
 
 /* Detach bottom-left zoom menu from the edge */
@@ -134,29 +136,9 @@
 }
 
 /* =========================================================
-   Actions Menu Text Labels (Convert grid to 2-column text list)
+   Actions Menu — enable hover on disabled buttons for tooltips
    ========================================================= */
-.tlui-actions-menu .tlui-grid {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
-  width: 380px !important; /* Wide enough for 2 columns of text */
-  gap: 4px !important;
-  padding: 8px !important;
-}
-
-.tlui-actions-menu .tlui-button {
-  width: 100% !important;
-  justify-content: flex-start !important;
-  padding: 0 12px !important;
-  border-radius: var(--tl-radius-2) !important;
-}
-
-.tlui-actions-menu .tlui-button::after {
-  content: attr(title) !important;
-  display: block !important;
-  margin-left: 12px !important;
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  color: var(--tl-color-text-1) !important;
-  white-space: nowrap !important;
+.tlui-actions-menu .tlui-button[disabled],
+.tlui-actions-menu .tlui-button:disabled {
+  pointer-events: auto !important;
 }

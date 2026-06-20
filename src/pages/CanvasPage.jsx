@@ -12,10 +12,11 @@ import {
   useValue,
   createTLStore,
   defaultShapeUtils,
+  DefaultPageMenu,
   getSnapshot,
   loadSnapshot
 } from 'tldraw';
-import { Lock, Unlock, Search, ChevronUp, ChevronDown, X, Magnet } from 'lucide-react';
+import { Lock, Unlock, Search, ChevronUp, ChevronDown, X, Magnet, Undo, Redo, Trash2, Copy, MoreVertical, Grid } from 'lucide-react';
 import 'tldraw/tldraw.css';
 
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
@@ -42,22 +43,7 @@ if (!window.canvasBgPattern) {
   window.canvasBgPattern = 'dots';
 }
 
-const CustomMainMenu = () => {
-  return (
-    <DefaultMainMenu>
-      <DefaultMainMenuContent />
-      <TldrawUiMenuGroup id="find">
-        <TldrawUiMenuItem 
-          id="find-on-canvas" 
-          label="Find on Canvas" 
-          icon="search" 
-          readonlyOk 
-          onSelect={() => window.dispatchEvent(new Event('toggleSearchUI'))} 
-        />
-      </TldrawUiMenuGroup>
-    </DefaultMainMenu>
-  );
-};
+
 
 const FindWidget = ({ editor }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -262,9 +248,18 @@ const CustomStylePanel = () => {
     [editor]
   );
 
-  if (!shouldShow) return null;
-
-  return <DefaultStylePanel />;
+  return (
+    <div 
+      className="transition-all duration-300 ease-out mt-14 max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar rounded-xl"
+      style={{
+        transform: shouldShow ? 'translateX(0)' : 'translateX(120%)',
+        opacity: shouldShow ? 1 : 0,
+        pointerEvents: shouldShow ? 'auto' : 'none'
+      }}
+    >
+      <DefaultStylePanel />
+    </div>
+  );
 };
 
 const CustomContextMenu = () => {
@@ -321,7 +316,7 @@ const CustomZoomMenu = () => {
   const zoomLevel = useValue('zoom', () => editor.getZoomLevel(), [editor]);
 
   return (
-    <div className="absolute bottom-4 left-4 z-[300] bg-white rounded-xl shadow-sm border border-gray-200 flex items-center p-1 gap-1 pointer-events-auto h-10">
+    <div className="absolute bottom-4 left-4 z-[300] bg-white/90 backdrop-blur-md rounded-xl shadow-sm border border-gray-200 flex items-center p-1 gap-1 pointer-events-auto h-10">
       <button
         onClick={() => editor.zoomOut()}
         className="w-8 h-8 flex flex-shrink-0 items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-[8px] transition-colors"
@@ -349,75 +344,9 @@ const CustomZoomMenu = () => {
   );
 };
 
-const BackgroundSwitcher = ({ editor, canvasMeta, setCanvasMeta, user }) => {
-  const [pattern, setPattern] = useState(window.canvasBgPattern);
-  const [isLocked, setIsLocked] = useState(window.canvasIsLocked || false);
-  const [isSnapMode, setIsSnapMode] = useState(window.canvasIsSnapMode || false);
 
-  useEffect(() => {
-    if (editor) {
-      editor.updateInstanceState({ isGridMode: window.canvasIsSnapMode || false });
-    }
-  }, [editor]);
 
-  const changePattern = (newPattern) => {
-    window.canvasBgPattern = newPattern;
-    setPattern(newPattern);
-    window.dispatchEvent(new Event('bgPatternChanged'));
-  };
-
-  const toggleLock = () => {
-    const newLocked = !isLocked;
-    setIsLocked(newLocked);
-    window.canvasIsLocked = newLocked;
-    window.dispatchEvent(new CustomEvent('canvasLockToggled', { detail: newLocked }));
-  };
-
-  const toggleSnapMode = () => {
-    const newSnapMode = !isSnapMode;
-    setIsSnapMode(newSnapMode);
-    window.canvasIsSnapMode = newSnapMode;
-    if (editor) {
-      editor.updateInstanceState({ isGridMode: newSnapMode });
-    }
-  };
-
-  return (
-    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[250] bg-white p-1 rounded-2xl shadow-sm border border-gray-200 flex gap-1 pointer-events-auto items-center">
-      {['none', 'dots', 'lines', 'grid'].map((p) => (
-        <button
-          key={p}
-          onClick={() => changePattern(p)}
-          className={`px-3 py-1.5 text-xs font-semibold rounded-xl capitalize transition-colors ${
-            pattern === p ? 'bg-gray-100 text-gray-900 shadow-sm' : 'text-gray-500 hover:bg-gray-50'
-          }`}
-        >
-          {p}
-        </button>
-      ))}
-      <div className="w-px h-4 bg-gray-300 mx-1"></div>
-      <button 
-         onClick={toggleSnapMode} 
-         className={`p-1.5 rounded-xl transition-colors ${isSnapMode ? 'text-blue-500 bg-blue-50 hover:bg-blue-100' : 'text-gray-500 hover:bg-gray-50'}`} 
-         title="Snap to Grid"
-      >
-        <Magnet size={14} />
-      </button>
-      <div className="w-px h-4 bg-gray-300 mx-1"></div>
-      <ShareButton canvasMeta={canvasMeta} setCanvasMeta={setCanvasMeta} user={user} />
-      <button 
-         onClick={toggleLock} 
-         className={`p-1.5 rounded-xl transition-colors ${isLocked ? 'text-red-500 bg-red-50 hover:bg-red-100' : 'text-gray-500 hover:bg-gray-50'}`} 
-         title="Lock Canvas"
-      >
-        {isLocked ? <Lock size={14} /> : <Unlock size={14} />}
-      </button>
-    </div>
-  );
-};
-
-const CanvasMetadataUI = ({ canvasMeta, setCanvasMeta, allTags, setAllTags, user }) => {
-  const [isAddingTag, setIsAddingTag] = useState(false);
+const CanvasMetadataUI = ({ canvasMeta, setCanvasMeta }) => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameVal, setNameVal] = useState(canvasMeta?.name || 'Untitled Canvas');
 
@@ -433,34 +362,8 @@ const CanvasMetadataUI = ({ canvasMeta, setCanvasMeta, allTags, setAllTags, user
     setIsEditingName(false);
   };
 
-  const handleAddTag = async (tagName) => {
-    if (!user) return; // Anonymous can't tag
-    
-    let tag = allTags.find(t => t.name.toLowerCase() === tagName.toLowerCase());
-    if (!tag) {
-      try {
-        const color = stringToColor(tagName);
-        tag = await createTag(user.id, tagName, color);
-        setAllTags(prev => [...prev, tag]);
-      } catch (e) {
-        console.error(e);
-        return;
-      }
-    }
-
-    if (canvasMeta.tags.some(t => t.id === tag.id)) return;
-
-    setCanvasMeta(prev => ({ ...prev, tags: [...prev.tags, tag] }));
-    await assignTagToCanvas(canvasMeta.id, tag.id);
-  };
-
-  const handleRemoveTag = async (tagId) => {
-    setCanvasMeta(prev => ({ ...prev, tags: prev.tags.filter(t => t.id !== tagId) }));
-    await removeTagFromCanvas(canvasMeta.id, tagId);
-  };
-
   return (
-    <div className="absolute top-20 left-4 z-[250] bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-sm border border-gray-200 pointer-events-auto flex flex-col gap-2 max-w-[250px]">
+    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[250] bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-xl shadow-sm border border-gray-200 pointer-events-auto flex items-center justify-center min-w-[150px] max-w-[400px] h-10">
       {isEditingName ? (
         <input 
           autoFocus
@@ -468,37 +371,17 @@ const CanvasMetadataUI = ({ canvasMeta, setCanvasMeta, allTags, setAllTags, user
           onChange={e => setNameVal(e.target.value)}
           onBlur={handleRename}
           onKeyDown={e => { if (e.key === 'Enter') handleRename(); if (e.key === 'Escape') { setIsEditingName(false); setNameVal(canvasMeta.name || 'Untitled Canvas'); } }}
-          className="font-bold text-gray-900 bg-transparent outline-none border-b border-blue-500 pb-0.5"
+          className="font-semibold text-sm text-gray-900 bg-transparent outline-none w-full text-center"
         />
       ) : (
         <div 
           onClick={() => setIsEditingName(true)}
-          className="font-bold text-gray-900 truncate cursor-pointer hover:text-blue-600 transition-colors"
+          className="font-semibold text-sm text-gray-800 truncate cursor-pointer hover:text-blue-600 transition-colors w-full text-center"
           title="Click to rename"
         >
           {canvasMeta.name || 'Untitled Canvas'}
         </div>
       )}
-      
-      <div className="flex flex-wrap gap-1 items-center">
-        <TagSelector 
-          assignedTags={canvasMeta.tags || []}
-          availableTags={allTags}
-          onAddTag={handleAddTag}
-          onRemoveTag={handleRemoveTag}
-          isAdding={isAddingTag}
-          setIsAdding={setIsAddingTag}
-        />
-        {user && !isAddingTag && (
-          <button 
-            onClick={() => setIsAddingTag(true)}
-            className="p-1 rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-            title="Add tag"
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          </button>
-        )}
-      </div>
     </div>
   );
 };
@@ -506,7 +389,8 @@ const CanvasMetadataUI = ({ canvasMeta, setCanvasMeta, allTags, setAllTags, user
 import { useYjsStore } from '../hooks/useYjsStore';
 import { generateUserIdentity } from '../utils/identity';
 import { Cursors } from '../components/Cursors';
-import { PresenceBar } from '../components/PresenceBar';
+import { CustomTopLeftMenu } from '../components/CustomTopLeftMenu';
+import { CollaborationControls } from '../components/CollaborationControls';
 
 const MainCanvas = ({ page, setPage }) => {
   const { canvasId } = useParams();
@@ -704,8 +588,8 @@ const MainCanvas = ({ page, setPage }) => {
         editor.updateInstanceState({ isReadonly: e.detail });
       }
     };
-    window.addEventListener('canvasLockToggled', handleLock);
-    return () => window.removeEventListener('canvasLockToggled', handleLock);
+    window.addEventListener('canvasLockChanged', handleLock);
+    return () => window.removeEventListener('canvasLockChanged', handleLock);
   }, [editor]);
 
   if (accessLevel === 'loading' || storeWithStatus.status === 'loading') {
@@ -753,32 +637,29 @@ const MainCanvas = ({ page, setPage }) => {
           }}
           components={{ 
             Minimap: null,
-            MainMenu: CustomMainMenu,
+            MainMenu: null,
+            PageMenu: null,
+            ActionsMenu: null,
+            QuickActions: null,
             ContextMenu: CustomContextMenu,
             Grid: null,
             Background: CustomBackground,
             StylePanel: CustomStylePanel,
             NavigationPanel: CustomZoomMenu
           }}
-        />
+        >
+          <CustomTopLeftMenu />
+          <CollaborationControls canvasMeta={canvasMeta} setCanvasMeta={setCanvasMeta} user={user} awareness={storeWithStatus.provider?.awareness} />
+        </Tldraw>
         {/* Custom UI Overlays */}
-        <BackgroundSwitcher editor={editor} canvasMeta={canvasMeta} setCanvasMeta={setCanvasMeta} user={user} />
         <FindWidget editor={editor} />
         <CanvasMetadataUI 
           canvasMeta={canvasMeta} 
           setCanvasMeta={setCanvasMeta} 
-          allTags={allTags} 
-          setAllTags={setAllTags} 
-          user={user} 
         />
         
         {/* STEP 3, 4, 5, 6: Multiplayer Cursors Overlay */}
         <Cursors editor={editor} awareness={storeWithStatus.provider?.awareness} />
-
-        {/* Presence Bar Overlay - Pulled out of Tldraw to prevent overflow clipping */}
-        <div className="absolute top-3 right-4 z-[300] pointer-events-auto">
-          <PresenceBar awareness={storeWithStatus.provider?.awareness} />
-        </div>
 
         <SignupBanner canvasId={canvasId} />
       </div>

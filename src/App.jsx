@@ -38,7 +38,8 @@ function AppLayout() {
     <div className={`w-screen h-screen overflow-hidden flex relative font-sans transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-900'} p-3 sm:p-2`}>
       
       {/* Global Navigation Tab Bar (Moved to bottom right to avoid conflicts) */}
-      <div className="absolute bottom-6 right-6 z-50 flex bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/50 p-1 pointer-events-auto">
+
+        <div className="absolute bottom-6 right-6 z-50 flex bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/50 p-1 pointer-events-auto">
         {tabs.map((tab) => (
           <button
             key={tab}
@@ -60,6 +61,7 @@ function AppLayout() {
           {darkMode ? <Sun size={18} /> : <Moon size={18} />}
         </button>
       </div>
+
 
       <div className="flex-1 flex overflow-hidden rounded-2xl shadow-xl shadow-black/5 bg-white border border-gray-200/50">
         <Routes>
