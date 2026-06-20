@@ -154,8 +154,15 @@ export function useYjsStore(roomId = 'sketchspace-room', onColdStart = null, ide
       }));
     });
 
+    const handleBeforeUnload = () => {
+      provider.awareness.setLocalState(null);
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
       unsubs.forEach(fn => fn());
+      provider.awareness.setLocalState(null);
       provider.disconnect();
       yDoc.destroy();
     };

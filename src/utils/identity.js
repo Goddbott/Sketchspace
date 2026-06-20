@@ -35,7 +35,13 @@ export function generateUserIdentity(user = null) {
   
   let name = `Guest ${Math.floor(Math.random() * 1000)}`;
   
+  let avatarUrl = null;
+  
   if (user) {
+    if (user.user_metadata?.avatar_url) {
+      avatarUrl = user.user_metadata.avatar_url;
+    }
+    
     if (user.user_metadata?.full_name) {
       name = user.user_metadata.full_name;
     } else if (user.email) {
@@ -45,5 +51,5 @@ export function generateUserIdentity(user = null) {
     }
   }
   
-  return { id, name, color };
+  return { id, name, color, avatarUrl };
 }

@@ -506,6 +506,7 @@ const CanvasMetadataUI = ({ canvasMeta, setCanvasMeta, allTags, setAllTags, user
 import { useYjsStore } from '../hooks/useYjsStore';
 import { generateUserIdentity } from '../utils/identity';
 import { Cursors } from '../components/Cursors';
+import { PresenceBar } from '../components/PresenceBar';
 
 const MainCanvas = ({ page, setPage }) => {
   const { canvasId } = useParams();
@@ -773,6 +774,11 @@ const MainCanvas = ({ page, setPage }) => {
         
         {/* STEP 3, 4, 5, 6: Multiplayer Cursors Overlay */}
         <Cursors editor={editor} awareness={storeWithStatus.provider?.awareness} />
+
+        {/* Presence Bar Overlay - Pulled out of Tldraw to prevent overflow clipping */}
+        <div className="absolute top-3 right-4 z-[300] pointer-events-auto">
+          <PresenceBar awareness={storeWithStatus.provider?.awareness} />
+        </div>
 
         <SignupBanner canvasId={canvasId} />
       </div>
