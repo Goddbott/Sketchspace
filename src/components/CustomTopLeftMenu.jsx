@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useEditor, DefaultMainMenu, DefaultPageMenu, DefaultActionsMenu } from 'tldraw';
-import { Undo, Redo, Trash2, Copy, Grid, Magnet, Sigma } from 'lucide-react';
+import { Undo, Redo, Trash2, Copy, Grid, Magnet, Sigma, LineChart } from 'lucide-react';
 import * as Toolbar from '@radix-ui/react-toolbar';
 
-export const CustomTopLeftMenu = ({ onOpenEquationModal }) => {
+export const CustomTopLeftMenu = ({ onOpenEquationModal, onOpenGraphModal, isGraphModalOpen }) => {
   const editor = useEditor();
   const [bgMenuOpen, setBgMenuOpen] = useState(false);
   const [currentPattern, setCurrentPattern] = useState(window.canvasBgPattern || 'dots');
@@ -148,6 +148,15 @@ export const CustomTopLeftMenu = ({ onOpenEquationModal }) => {
             title="Equation Tool"
           >
             <Sigma size={16} />
+          </button>
+
+          {/* Graph Tool Button */}
+          <button 
+            onClick={onOpenGraphModal} 
+            className={`w-8 h-8 ml-1 flex items-center justify-center rounded-lg transition-colors ${isGraphModalOpen ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`}
+            title="Graph Tool"
+          >
+            <LineChart size={16} />
           </button>
 
           {bgMenuOpen && (

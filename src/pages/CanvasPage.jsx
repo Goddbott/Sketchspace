@@ -31,8 +31,10 @@ import TagSelector from '../components/TagSelector';
 import EquationToolModal from '../components/EquationToolModal';
 import { useAuth } from '../lib/AuthContext';
 import { EquationShapeUtil } from '../shapes/EquationShapeUtil';
+import { GraphShapeUtil } from '../shapes/GraphShapeUtil';
+import GraphBuilderModal from '../components/GraphBuilderModal';
 
-const customShapeUtils = [EquationShapeUtil];
+const customShapeUtils = [EquationShapeUtil, GraphShapeUtil];
 
 function stringToColor(str) {
   let hash = 0;
@@ -316,14 +318,14 @@ const CustomContextMenu = () => {
   );
 };
 
-// Temporary test component — creates one equation shape on mount
+// Temporary test component — creates test shapes on mount
 const TestEquationCreator = () => {
   const editor = useEditor();
   
   useEffect(() => {
-    // Only create if no equation shapes exist yet
-    const existing = editor.getCurrentPageShapes().filter(s => s.type === 'equation');
-    if (existing.length === 0) {
+    // Equation shape
+    const existingEq = editor.getCurrentPageShapes().filter(s => s.type === 'equation');
+    if (existingEq.length === 0) {
       const shapeId = createShapeId();
       editor.createShape({
         id: shapeId,
@@ -335,6 +337,23 @@ const TestEquationCreator = () => {
           h: 90,
           latex: 'x^2 + 5x + 6 = 0',
           color: '#1e293b',
+        },
+      });
+    }
+
+    // Graph shape
+    const existingGraph = editor.getCurrentPageShapes().filter(s => s.type === 'graph');
+    if (existingGraph.length === 0) {
+      const graphShapeId = createShapeId();
+      editor.createShape({
+        id: graphShapeId,
+        type: 'graph',
+        x: 600,
+        y: 200,
+        props: {
+          w: 400,
+          h: 300,
+          expressions: ["y=x^2+3x-4"]
         },
       });
     }
@@ -444,6 +463,10 @@ const MainCanvas = ({ page, setPage }) => {
   const [isEquationModalOpen, setIsEquationModalOpen] = useState(false);
   const [editingEquationId, setEditingEquationId] = useState(null);
   const [initialEquationLatex, setInitialEquationLatex] = useState('');
+
+  const [isGraphModalOpen, setIsGraphModalOpen] = useState(false);
+  const [editingGraphId, setEditingGraphId] = useState(null);
+  const [initialGraphExpressions, setInitialGraphExpressions] = useState([]);
 
   useEffect(() => {
     async function fetchMeta() {
@@ -643,6 +666,21 @@ const MainCanvas = ({ page, setPage }) => {
     return () => window.removeEventListener('edit-equation', handleEditEquation);
   }, []);
 
+  // Handle double-clicks on graph shapes via custom event
+  useEffect(() => {
+    const handleEditGraph = (e) => {
+      const shape = e.detail;
+      if (shape && shape.type === 'graph') {
+        setEditingGraphId(shape.id);
+        setInitialGraphExpressions(shape.props.expressions);
+        setIsGraphModalOpen(true);
+      }
+    };
+    
+    window.addEventListener('edit-graph', handleEditGraph);
+    return () => window.removeEventListener('edit-graph', handleEditGraph);
+  }, []);
+
   if (accessLevel === 'loading' || storeWithStatus.status === 'loading') {
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-50 h-full w-full">
@@ -701,11 +739,19 @@ const MainCanvas = ({ page, setPage }) => {
           }}
         >
           <TestEquationCreator />
-          <CustomTopLeftMenu onOpenEquationModal={() => {
-            setEditingEquationId(null);
-            setInitialEquationLatex('');
-            setIsEquationModalOpen(true);
-          }} />
+          <CustomTopLeftMenu 
+            onOpenEquationModal={() => {
+              setEditingEquationId(null);
+              setInitialEquationLatex('');
+              setIsEquationModalOpen(true);
+            }} 
+            onOpenGraphModal={() => {
+              setEditingGraphId(null);
+              setInitialGraphExpressions([]);
+              setIsGraphModalOpen(true);
+            }}
+            isGraphModalOpen={isGraphModalOpen}
+          />
           <CollaborationControls canvasMeta={canvasMeta} setCanvasMeta={setCanvasMeta} user={user} awareness={storeWithStatus.provider?.awareness} />
         </Tldraw>
         {/* Custom UI Overlays */}
@@ -721,6 +767,14 @@ const MainCanvas = ({ page, setPage }) => {
           editor={editor}
           editingEquationId={editingEquationId}
           initialLatex={initialEquationLatex}
+        />
+
+        <GraphBuilderModal 
+          isOpen={isGraphModalOpen} 
+          onClose={() => setIsGraphModalOpen(false)} 
+          editor={editor}
+          editingGraphId={editingGraphId}
+          initialExpressions={initialGraphExpressions}
         />
 
         {/* STEP 3, 4, 5, 6: Multiplayer Cursors Overlay */}

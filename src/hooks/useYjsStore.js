@@ -4,8 +4,9 @@ import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { EquationShapeUtil } from '../shapes/EquationShapeUtil';
+import { GraphShapeUtil } from '../shapes/GraphShapeUtil';
 
-const customShapeUtils = [...defaultShapeUtils, EquationShapeUtil];
+const customShapeUtils = [...defaultShapeUtils, EquationShapeUtil, GraphShapeUtil];
 
 // A basic hook to connect tldraw to Yjs for real-time collaboration
 export function useYjsStore(roomId = 'sketchspace-room', onColdStart = null, identity = null) {
