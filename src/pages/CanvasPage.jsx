@@ -14,7 +14,8 @@ import {
   defaultShapeUtils,
   DefaultPageMenu,
   getSnapshot,
-  loadSnapshot
+  loadSnapshot,
+  createShapeId
 } from 'tldraw';
 import { Lock, Unlock, Search, ChevronUp, ChevronDown, X, Magnet, Undo, Redo, Trash2, Copy, MoreVertical, Grid } from 'lucide-react';
 import 'tldraw/tldraw.css';
@@ -27,7 +28,11 @@ import { supabase } from '../lib/supabase';
 import ShareButton from '../components/ShareButton';
 import SignupBanner from '../components/SignupBanner';
 import TagSelector from '../components/TagSelector';
+import EquationToolModal from '../components/EquationToolModal';
 import { useAuth } from '../lib/AuthContext';
+import { EquationShapeUtil } from '../shapes/EquationShapeUtil';
+
+const customShapeUtils = [EquationShapeUtil];
 
 function stringToColor(str) {
   let hash = 0;
@@ -311,6 +316,33 @@ const CustomContextMenu = () => {
   );
 };
 
+// Temporary test component — creates one equation shape on mount
+const TestEquationCreator = () => {
+  const editor = useEditor();
+  
+  useEffect(() => {
+    // Only create if no equation shapes exist yet
+    const existing = editor.getCurrentPageShapes().filter(s => s.type === 'equation');
+    if (existing.length === 0) {
+      const shapeId = createShapeId();
+      editor.createShape({
+        id: shapeId,
+        type: 'equation',
+        x: 200,
+        y: 200,
+        props: {
+          w: 300,
+          h: 90,
+          latex: 'x^2 + 5x + 6 = 0',
+          color: '#1e293b',
+        },
+      });
+    }
+  }, [editor]);
+
+  return null;
+};
+
 const CustomZoomMenu = () => {
   const editor = useEditor();
   const zoomLevel = useValue('zoom', () => editor.getZoomLevel(), [editor]);
@@ -406,8 +438,12 @@ const MainCanvas = ({ page, setPage }) => {
 
   const [canvasMeta, setCanvasMeta] = useState(null);
   const [allTags, setAllTags] = useState([]);
-  const [accessLevel, setAccessLevel] = useState('loading'); // 'owner', 'editor', 'viewer', 'denied'
   const [accessDenied, setAccessDenied] = useState(false);
+  const [accessLevel, setAccessLevel] = useState('loading'); // 'owner', 'editor', 'viewer', 'denied'
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isEquationModalOpen, setIsEquationModalOpen] = useState(false);
+  const [editingEquationId, setEditingEquationId] = useState(null);
+  const [initialEquationLatex, setInitialEquationLatex] = useState('');
 
   useEffect(() => {
     async function fetchMeta() {
@@ -592,6 +628,21 @@ const MainCanvas = ({ page, setPage }) => {
     return () => window.removeEventListener('canvasLockChanged', handleLock);
   }, [editor]);
 
+  // Handle double-clicks on equation shapes via custom event
+  useEffect(() => {
+    const handleEditEquation = (e) => {
+      const shape = e.detail;
+      if (shape && shape.type === 'equation') {
+        setEditingEquationId(shape.id);
+        setInitialEquationLatex(shape.props.latex);
+        setIsEquationModalOpen(true);
+      }
+    };
+    
+    window.addEventListener('edit-equation', handleEditEquation);
+    return () => window.removeEventListener('edit-equation', handleEditEquation);
+  }, []);
+
   if (accessLevel === 'loading' || storeWithStatus.status === 'loading') {
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-50 h-full w-full">
@@ -626,7 +677,8 @@ const MainCanvas = ({ page, setPage }) => {
       {/* Tldraw Infinite Canvas Component */}
       <div className="absolute inset-0 z-0">
         <Tldraw 
-          store={storeWithStatus.store} 
+          store={storeWithStatus.store}
+          shapeUtils={customShapeUtils} 
           onMount={(ed) => {
             setEditor(ed);
             editorRef.current = ed;
@@ -648,7 +700,12 @@ const MainCanvas = ({ page, setPage }) => {
             NavigationPanel: CustomZoomMenu
           }}
         >
-          <CustomTopLeftMenu />
+          <TestEquationCreator />
+          <CustomTopLeftMenu onOpenEquationModal={() => {
+            setEditingEquationId(null);
+            setInitialEquationLatex('');
+            setIsEquationModalOpen(true);
+          }} />
           <CollaborationControls canvasMeta={canvasMeta} setCanvasMeta={setCanvasMeta} user={user} awareness={storeWithStatus.provider?.awareness} />
         </Tldraw>
         {/* Custom UI Overlays */}
@@ -658,6 +715,14 @@ const MainCanvas = ({ page, setPage }) => {
           setCanvasMeta={setCanvasMeta} 
         />
         
+        <EquationToolModal 
+          isOpen={isEquationModalOpen} 
+          onClose={() => setIsEquationModalOpen(false)} 
+          editor={editor}
+          editingEquationId={editingEquationId}
+          initialLatex={initialEquationLatex}
+        />
+
         {/* STEP 3, 4, 5, 6: Multiplayer Cursors Overlay */}
         <Cursors editor={editor} awareness={storeWithStatus.provider?.awareness} />
 

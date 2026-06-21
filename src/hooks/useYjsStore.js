@@ -3,10 +3,13 @@ import { createTLStore, defaultShapeUtils } from 'tldraw';
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import { IndexeddbPersistence } from 'y-indexeddb';
+import { EquationShapeUtil } from '../shapes/EquationShapeUtil';
+
+const customShapeUtils = [...defaultShapeUtils, EquationShapeUtil];
 
 // A basic hook to connect tldraw to Yjs for real-time collaboration
 export function useYjsStore(roomId = 'sketchspace-room', onColdStart = null, identity = null) {
-  const [store] = useState(() => createTLStore({ shapeUtils: defaultShapeUtils }));
+  const [store] = useState(() => createTLStore({ shapeUtils: customShapeUtils }));
   const [storeWithStatus, setStoreWithStatus] = useState({
     store,
     status: 'loading',

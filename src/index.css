@@ -76,6 +76,23 @@
 .tlui-style-panel .tlui-toolbar:has([data-testid="style.align"])::before { content: 'Text Alignment'; }
 .tlui-style-panel .tlui-toolbar:has([data-testid="style.verticalAlign"])::before { content: "Shape's Text Alignment"; }
 
+/* Fix for MathQuill hidden textarea capturing focus styles */
+.mq-math-mode textarea {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Reposition 'Back to Content' Helper Button */
+.tlui-helper-buttons {
+  position: fixed !important;
+  bottom: 16px !important;
+  left: 160px !important;
+  top: auto !important;
+  transform: none !important;
+  z-index: 500 !important;
+}
+
 /* Fix opacity slider container and label */
 .tlui-style-panel .tlui-slider__container {
   position: relative !important;

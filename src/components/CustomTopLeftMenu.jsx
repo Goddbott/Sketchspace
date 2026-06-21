@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useEditor, DefaultMainMenu, DefaultPageMenu, DefaultActionsMenu } from 'tldraw';
-import { Undo, Redo, Trash2, Copy, Grid, Magnet } from 'lucide-react';
+import { Undo, Redo, Trash2, Copy, Grid, Magnet, Sigma } from 'lucide-react';
 import * as Toolbar from '@radix-ui/react-toolbar';
 
-export const CustomTopLeftMenu = () => {
+export const CustomTopLeftMenu = ({ onOpenEquationModal }) => {
   const editor = useEditor();
   const [bgMenuOpen, setBgMenuOpen] = useState(false);
   const [currentPattern, setCurrentPattern] = useState(window.canvasBgPattern || 'dots');
@@ -139,6 +139,15 @@ export const CustomTopLeftMenu = () => {
             title="Background Pattern"
           >
             <Grid size={16} />
+          </button>
+
+          {/* Equation Tool Button */}
+          <button 
+            onClick={onOpenEquationModal} 
+            className="w-8 h-8 ml-1 flex items-center justify-center rounded-lg text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors"
+            title="Equation Tool"
+          >
+            <Sigma size={16} />
           </button>
 
           {bgMenuOpen && (
