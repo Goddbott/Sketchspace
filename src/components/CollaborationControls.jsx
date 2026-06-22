@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Lock, Unlock } from 'lucide-react';
+import { Lock, Unlock, Clock } from 'lucide-react';
 import { PresenceBar } from './PresenceBar';
 import ShareButton from './ShareButton';
 
-export const CollaborationControls = ({ canvasMeta, setCanvasMeta, user, awareness }) => {
+export const CollaborationControls = ({ canvasMeta, setCanvasMeta, user, awareness, isTimelineOpen, onToggleTimeline }) => {
   const [isLocked, setIsLocked] = useState(window.canvasIsLocked || false);
 
   const toggleLock = () => {
@@ -31,6 +31,19 @@ export const CollaborationControls = ({ canvasMeta, setCanvasMeta, user, awarene
       {/* Share Button */}
       <div className="flex items-center px-1">
         <ShareButton canvasMeta={canvasMeta} setCanvasMeta={setCanvasMeta} user={user} />
+      </div>
+
+      <Divider />
+
+      {/* Timeline Toggle */}
+      <div className="flex items-center px-1">
+        <button 
+          onClick={onToggleTimeline} 
+          className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${isTimelineOpen ? 'text-blue-600 bg-blue-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`} 
+          title="Board Timeline"
+        >
+          <Clock size={16} />
+        </button>
       </div>
 
       <Divider />

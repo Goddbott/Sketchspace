@@ -23,7 +23,7 @@ import 'tldraw/tldraw.css';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { get, set, del } from 'idb-keyval';
 import debounce from 'lodash.debounce';
-import { fetchCanvasFromSupabase, saveCanvasToSupabase, uploadThumbnail, updateCanvas, createTag, assignTagToCanvas, removeTagFromCanvas } from '../lib/canvasApi';
+import { fetchCanvasFromSupabase, saveCanvasToSupabase, uploadThumbnail, updateCanvas, createTag, assignTagToCanvas, removeTagFromCanvas, saveHistorySnapshot } from '../lib/canvasApi';
 import { supabase } from '../lib/supabase';
 import ShareButton from '../components/ShareButton';
 import SignupBanner from '../components/SignupBanner';
@@ -33,8 +33,9 @@ import { useAuth } from '../lib/AuthContext';
 import { EquationShapeUtil } from '../shapes/EquationShapeUtil';
 import { GraphShapeUtil } from '../shapes/GraphShapeUtil';
 import GraphBuilderModal from '../components/GraphBuilderModal';
+import TimelineModal from '../components/TimelineModal';
 
-const customShapeUtils = [EquationShapeUtil, GraphShapeUtil];
+const customShapeUtils = [...defaultShapeUtils, EquationShapeUtil, GraphShapeUtil];
 
 function stringToColor(str) {
   let hash = 0;
@@ -468,6 +469,49 @@ const MainCanvas = ({ page, setPage }) => {
   const [editingGraphId, setEditingGraphId] = useState(null);
   const [initialGraphExpressions, setInitialGraphExpressions] = useState([]);
 
+  // Timeline & History State
+  const [isTimelineOpen, setIsTimelineOpen] = useState(false);
+  const hasPendingChanges = useRef(false);
+
+  // Snapshot Capture Logic
+  const lastSnapshotHashRef = useRef(null);
+
+  useEffect(() => {
+    if (!editor || accessLevel === 'viewer' || window.canvasIsLocked) return;
+
+    // Only listen for user-initiated document changes (ignores viewport, cursor, presence, and internal events)
+    const unsubscribe = editor.store.listen(() => {
+      hasPendingChanges.current = true;
+    }, { source: 'user', scope: 'document' });
+
+    const interval = setInterval(async () => {
+      if (hasPendingChanges.current) {
+        try {
+          const snapshot = getSnapshot(editor.store);
+          // Quick hash to avoid saving duplicate snapshots when nothing actually changed
+          const snapshotStr = JSON.stringify(snapshot.document);
+          const hash = snapshotStr.length + '_' + snapshotStr.slice(0, 200);
+          if (hash === lastSnapshotHashRef.current) {
+            hasPendingChanges.current = false;
+            return;
+          }
+          lastSnapshotHashRef.current = hash;
+          await saveHistorySnapshot(canvasId, snapshot, user?.id);
+          hasPendingChanges.current = false;
+        } catch (err) {
+          console.error("Failed to save periodic snapshot:", err);
+        }
+      }
+    }, 5000); // 5 seconds batch interval for rapid testing
+
+    return () => {
+      unsubscribe();
+      clearInterval(interval);
+    };
+  }, [editor, canvasId, user, accessLevel]);
+
+
+
   useEffect(() => {
     async function fetchMeta() {
       const { data, error: fetchErr } = await supabase
@@ -751,8 +795,17 @@ const MainCanvas = ({ page, setPage }) => {
               setIsGraphModalOpen(true);
             }}
             isGraphModalOpen={isGraphModalOpen}
+            isTimelineOpen={isTimelineOpen}
+            onToggleTimeline={() => setIsTimelineOpen(prev => !prev)}
           />
-          <CollaborationControls canvasMeta={canvasMeta} setCanvasMeta={setCanvasMeta} user={user} awareness={storeWithStatus.provider?.awareness} />
+          <CollaborationControls 
+            canvasMeta={canvasMeta} 
+            setCanvasMeta={setCanvasMeta} 
+            user={user} 
+            awareness={storeWithStatus.provider?.awareness} 
+            isTimelineOpen={isTimelineOpen}
+            onToggleTimeline={() => setIsTimelineOpen(prev => !prev)}
+          />
         </Tldraw>
         {/* Custom UI Overlays */}
         <FindWidget editor={editor} />
@@ -779,6 +832,13 @@ const MainCanvas = ({ page, setPage }) => {
 
         {/* STEP 3, 4, 5, 6: Multiplayer Cursors Overlay */}
         <Cursors editor={editor} awareness={storeWithStatus.provider?.awareness} />
+
+        {/* Timeline Modal */}
+        <TimelineModal 
+          isOpen={isTimelineOpen}
+          onClose={() => setIsTimelineOpen(false)}
+          canvasId={canvasId}
+        />
 
         <SignupBanner canvasId={canvasId} />
       </div>

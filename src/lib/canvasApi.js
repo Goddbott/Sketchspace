@@ -450,3 +450,47 @@ export async function updateCollaboratorRole(id, role) {
   if (!data || data.length === 0) throw new Error("Update blocked by database (RLS policy or row not found).");
   return data[0];
 }
+
+/**
+ * Saves a new historical snapshot for a canvas.
+ * @param {string} canvasId - The ID of the canvas.
+ * @param {Object} snapshot - The JSON snapshot payload.
+ * @param {string} [userId] - Optional author ID.
+ * @returns {Promise<Object>} The inserted row data.
+ */
+export async function saveHistorySnapshot(canvasId, snapshot, userId = null) {
+  const { data, error } = await supabase
+    .from('canvas_history')
+    .insert([{
+      canvas_id: canvasId,
+      snapshot: snapshot,
+      author_id: userId
+    }])
+    .select()
+    .single();
+
+  if (error) {
+    console.error(`Error saving history snapshot for ${canvasId}:`, error);
+    throw error;
+  }
+  return data;
+}
+
+/**
+ * Retrieves the timeline of snapshots for a given canvas.
+ * @param {string} canvasId - The ID of the canvas.
+ * @returns {Promise<Array>} Array of snapshot records ordered chronologically.
+ */
+export async function getHistorySnapshots(canvasId) {
+  const { data, error } = await supabase
+    .from('canvas_history')
+    .select('id, created_at, author_id, snapshot')
+    .eq('canvas_id', canvasId)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error(`Error fetching history snapshots for ${canvasId}:`, error);
+    throw error;
+  }
+  return data;
+}
