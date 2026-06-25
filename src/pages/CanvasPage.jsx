@@ -759,6 +759,7 @@ const MainCanvas = ({ page, setPage }) => {
       {/* Tldraw Infinite Canvas Component */}
       <div className="absolute inset-0 z-0">
         <Tldraw 
+          licenseKey={import.meta.env.VITE_TLDRAW_LICENSE_KEY}
           store={storeWithStatus.store}
           shapeUtils={customShapeUtils} 
           onMount={(ed) => {
