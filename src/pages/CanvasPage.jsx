@@ -319,49 +319,6 @@ const CustomContextMenu = () => {
   );
 };
 
-// Temporary test component — creates test shapes on mount
-const TestEquationCreator = () => {
-  const editor = useEditor();
-  
-  useEffect(() => {
-    // Equation shape
-    const existingEq = editor.getCurrentPageShapes().filter(s => s.type === 'equation');
-    if (existingEq.length === 0) {
-      const shapeId = createShapeId();
-      editor.createShape({
-        id: shapeId,
-        type: 'equation',
-        x: 200,
-        y: 200,
-        props: {
-          w: 300,
-          h: 90,
-          latex: 'x^2 + 5x + 6 = 0',
-          color: '#1e293b',
-        },
-      });
-    }
-
-    // Graph shape
-    const existingGraph = editor.getCurrentPageShapes().filter(s => s.type === 'graph');
-    if (existingGraph.length === 0) {
-      const graphShapeId = createShapeId();
-      editor.createShape({
-        id: graphShapeId,
-        type: 'graph',
-        x: 600,
-        y: 200,
-        props: {
-          w: 400,
-          h: 300,
-          expressions: ["y=x^2+3x-4"]
-        },
-      });
-    }
-  }, [editor]);
-
-  return null;
-};
 
 const CustomZoomMenu = () => {
   const editor = useEditor();
@@ -783,7 +740,6 @@ const MainCanvas = ({ page, setPage }) => {
             NavigationPanel: CustomZoomMenu
           }}
         >
-          <TestEquationCreator />
           <CustomTopLeftMenu 
             onOpenEquationModal={() => {
               setEditingEquationId(null);
