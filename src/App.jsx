@@ -8,9 +8,6 @@ import CanvasPage from './pages/CanvasPage';
 import AuthPage from './pages/AuthPage';
 import { AuthProvider, useAuth } from './lib/AuthContext';
 
-const MathQuillTest = React.lazy(() => import('./test/MathQuillTest'));
-const DesmosTest = React.lazy(() => import('./test/DesmosTest'));
-
 function AppLayout() {
   const [darkMode, setDarkMode] = useState(false);
   const [isNavOpen, setIsNavOpen] = useState(true);
@@ -92,8 +89,6 @@ function AppLayout() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/canvas/:canvasId" element={<CanvasPage />} />
-          <Route path="/mathtest" element={<React.Suspense fallback={<div className="flex items-center justify-center h-full">Loading MathQuill...</div>}><MathQuillTest /></React.Suspense>} />
-          <Route path="/desmostest" element={<React.Suspense fallback={<div className="flex items-center justify-center h-full">Loading Desmos...</div>}><DesmosTest /></React.Suspense>} />
         </Routes>
       </div>
     </div>
