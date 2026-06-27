@@ -99,22 +99,22 @@ export default function CanvasCard({ canvas, folders = [], tags = [], onAddTag, 
 
   return (
     <div 
-      className="group border border-gray-200 rounded-2xl hover:border-blue-300 hover:shadow-lg transition-all cursor-pointer bg-white relative flex flex-col h-full"
+      className="group border border-gray-200 dark:border-gray-800 rounded-2xl hover:border-blue-300 dark:hover:border-gray-600 hover:shadow-lg transition-all cursor-pointer bg-white dark:bg-gray-900 relative flex flex-col h-full"
       onClick={onClick}
       draggable={true}
       onDragStart={handleDragStart}
     >
       {/* Thumbnail Area */}
-      <div className="h-36 relative border-b border-gray-100 bg-gray-50 flex items-center justify-center rounded-t-2xl">
+      <div className="h-36 relative border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 flex items-center justify-center rounded-t-2xl">
         
         {canvas.thumbnail_url ? (
           <img 
             src={canvas.thumbnail_url.startsWith('data:') ? canvas.thumbnail_url : `${canvas.thumbnail_url}?t=${new Date(canvas.updated_at || Date.now()).getTime()}`} 
             alt={canvas.name || 'Canvas Preview'} 
-            className="w-full h-full object-cover object-center bg-white rounded-t-2xl"
+            className="w-full h-full object-cover object-center bg-white rounded-t-2xl dark:invert dark:hue-rotate-180 transition-all duration-300"
           />
         ) : (
-          <div className="text-gray-300 font-medium text-sm flex items-center justify-center h-full w-full bg-white rounded-t-2xl">
+          <div className="text-gray-300 dark:text-gray-600 font-medium text-sm flex items-center justify-center h-full w-full bg-white dark:bg-gray-900 rounded-t-2xl">
             Empty Canvas
           </div>
         )}
@@ -124,57 +124,57 @@ export default function CanvasCard({ canvas, folders = [], tags = [], onAddTag, 
           <div ref={menuRef} className="relative">
             <button 
               onClick={handleMenuToggle}
-              className="p-1.5 bg-white/90 backdrop-blur text-gray-700 rounded-lg shadow-sm hover:bg-white hover:text-blue-600 transition-colors"
+              className="p-1.5 bg-white/90 dark:bg-gray-800/90 backdrop-blur text-gray-700 dark:text-gray-300 rounded-lg shadow-sm hover:bg-white dark:hover:bg-gray-700 hover:text-blue-600 dark:hover:text-white transition-colors"
             >
               <MoreVertical size={16} />
             </button>
             
             {/* Dropdown Menu */}
             {isMenuOpen && !isFolderMenuOpen ? (
-              <div className="absolute top-full right-0 mt-1 w-40 bg-white border border-gray-200 shadow-xl rounded-xl py-1 z-10 text-sm font-medium">
+              <div className="absolute top-full right-0 mt-1 w-40 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl rounded-xl py-1 z-10 text-sm font-medium">
                 <button 
                   onClick={(e) => { e.stopPropagation(); setIsEditingName(true); setIsMenuOpen(false); }}
-                  className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                  className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-700 dark:text-gray-300"
                 >
                   <Edit2 size={14} /> Rename
                 </button>
                 <button 
                   onClick={handleDuplicate}
-                  className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                  className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-700 dark:text-gray-300"
                 >
                   <Copy size={14} /> Duplicate
                 </button>
                 <button 
                   onClick={handleCopyLink}
-                  className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                  className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-700 dark:text-gray-300"
                 >
                   <Share2 size={14} /> Share Link
                 </button>
                 <button 
                   onClick={(e) => { e.stopPropagation(); setIsFolderMenuOpen(true); }}
-                  className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                  className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-700 dark:text-gray-300"
                 >
                   <FolderInput size={14} /> Move to folder
                 </button>
                 <button 
                   onClick={(e) => { e.stopPropagation(); setIsAddingTag(true); setIsMenuOpen(false); }}
-                  className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2 text-gray-700"
+                  className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-700 dark:text-gray-300"
                 >
                   <Tag size={14} /> Add tag
                 </button>
-                <div className="h-px bg-gray-100 my-1"></div>
+                <div className="h-px bg-gray-100 dark:bg-gray-700 my-1"></div>
                 <button 
                   onClick={handleDelete}
-                  className="w-full text-left px-3 py-2 hover:bg-red-50 flex items-center gap-2 text-red-600"
+                  className="w-full text-left px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/30 flex items-center gap-2 text-red-600 dark:text-red-400"
                 >
                   <Trash2 size={14} /> Delete
                 </button>
               </div>
             ) : isMenuOpen && isFolderMenuOpen ? (
-              <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-10">
+              <div className="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 py-1 z-10">
                 <button 
                   onClick={(e) => { e.stopPropagation(); setIsFolderMenuOpen(false); }}
-                  className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2 text-gray-900 font-medium border-b border-gray-100"
+                  className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-900 dark:text-white font-medium border-b border-gray-100 dark:border-gray-700"
                 >
                   <ArrowLeft size={14} /> Back
                 </button>
@@ -189,7 +189,7 @@ export default function CanvasCard({ canvas, folders = [], tags = [], onAddTag, 
                     <button 
                       key={folder.id}
                       onClick={(e) => { e.stopPropagation(); setIsMenuOpen(false); onMoveToFolder(canvas.id, folder.id); }}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center gap-2 text-gray-700 text-sm truncate"
+                      className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm truncate"
                     >
                       <span className="w-2 h-2 rounded-full bg-blue-500"></span> {folder.name}
                     </button>
@@ -202,7 +202,7 @@ export default function CanvasCard({ canvas, folders = [], tags = [], onAddTag, 
       </div>
 
       {/* Details Area */}
-      <div className="p-4 flex-1 flex flex-col justify-between bg-white rounded-b-2xl">
+      <div className="p-4 flex-1 flex flex-col justify-between bg-white dark:bg-gray-900 rounded-b-2xl">
         <div className="mb-2">
           {isEditingName ? (
             <input
@@ -213,10 +213,10 @@ export default function CanvasCard({ canvas, folders = [], tags = [], onAddTag, 
               onBlur={handleRenameSubmit}
               onKeyDown={handleKeyDown}
               onClick={(e) => e.stopPropagation()}
-              className="w-full font-semibold text-gray-900 border-b-2 border-blue-500 focus:outline-none bg-transparent px-0 py-0 m-0 mb-2"
+              className="w-full font-semibold text-gray-900 dark:text-white border-b-2 border-blue-500 focus:outline-none bg-transparent px-0 py-0 m-0 mb-2"
             />
           ) : (
-            <h3 className="font-semibold text-gray-900 truncate mb-2" title={canvas.name || 'Untitled Canvas'}>
+            <h3 className="font-semibold text-gray-900 dark:text-white truncate mb-2" title={canvas.name || 'Untitled Canvas'}>
               {canvas.name || 'Untitled Canvas'}
             </h3>
           )}
@@ -233,9 +233,9 @@ export default function CanvasCard({ canvas, folders = [], tags = [], onAddTag, 
           </div>
         </div>
         
-        <div className="flex items-center justify-between text-xs text-gray-500 mt-auto">
+        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-auto">
           <span>Edited {getRelativeTime(canvas.updated_at)}</span>
-          <div className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-md">
+          <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md">
             <Users size={12}/> 1
           </div>
         </div>

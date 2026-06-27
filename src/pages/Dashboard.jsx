@@ -301,10 +301,10 @@ export default function Dashboard() {
   const displayName = user.email?.split('@')[0] || 'there';
 
   return (
-    <div className="flex-1 flex bg-white overflow-hidden">
+    <div className="flex-1 flex bg-white dark:bg-gray-950 overflow-hidden">
       {/* Sidebar Navigation */}
-      <div className="w-64 border-r border-gray-200 bg-gray-50 flex flex-col p-4 shrink-0">
-        <div className="flex items-center gap-2 font-bold text-xl text-gray-900 mb-8 px-2">
+      <div className="w-64 border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 flex flex-col p-4 shrink-0">
+        <div className="flex items-center gap-2 font-bold text-xl text-gray-900 dark:text-white mb-8 px-2">
           <span className="text-2xl">🥽</span> SketchSpace
         </div>
         
@@ -317,18 +317,18 @@ export default function Dashboard() {
           
           <button 
             onClick={() => setActiveFolder('all')}
-            className={`flex items-center gap-3 px-3 py-2 font-medium rounded-lg transition-colors ${activeFolder === 'all' ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'}`}
+            className={`flex items-center gap-3 px-3 py-2 font-medium rounded-lg transition-colors ${activeFolder === 'all' ? 'bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50'}`}
           >
-            <LayoutGrid size={18} className={activeFolder === 'all' ? 'text-blue-600' : 'text-gray-400'} /> All Canvases
+            <LayoutGrid size={18} className={activeFolder === 'all' ? 'text-blue-600 dark:text-blue-500' : 'text-gray-400 dark:text-gray-500'} /> All Canvases
           </button>
           
           <button 
             onClick={() => setActiveFolder('uncategorized')}
-            className={`flex items-center gap-3 px-3 py-2 font-medium rounded-lg transition-colors ${activeFolder === 'uncategorized' ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'}`}
+            className={`flex items-center gap-3 px-3 py-2 font-medium rounded-lg transition-colors ${activeFolder === 'uncategorized' ? 'bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50'}`}
             onDragOver={handleDragOver}
             onDrop={(e) => handleDropOnFolder(null, e)}
           >
-            <FileText size={18} className={activeFolder === 'uncategorized' ? 'text-blue-600' : 'text-gray-400'} /> Uncategorized
+            <FileText size={18} className={activeFolder === 'uncategorized' ? 'text-blue-600 dark:text-blue-500' : 'text-gray-400 dark:text-gray-500'} /> Uncategorized
           </button>
 
           <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2 mt-6 flex justify-between items-center group">
@@ -343,8 +343,8 @@ export default function Dashboard() {
           </div>
 
           {isCreatingFolder && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-blue-50/50 rounded-lg border border-blue-200">
-              <Folder size={18} className="text-blue-400" />
+            <div className="flex items-center gap-2 px-3 py-2 bg-blue-50/50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800/50">
+              <Folder size={18} className="text-blue-400 dark:text-blue-500" />
               <input
                 ref={folderInputRef}
                 type="text"
@@ -356,7 +356,7 @@ export default function Dashboard() {
                 }}
                 onBlur={handleCreateFolder}
                 placeholder="Folder name"
-                className="bg-transparent border-none outline-none text-sm font-medium text-gray-900 w-full"
+                className="bg-transparent border-none outline-none text-sm font-medium text-gray-900 dark:text-white w-full"
               />
             </div>
           )}
@@ -368,8 +368,8 @@ export default function Dashboard() {
 
             if (isEditing) {
               return (
-                <div key={folder.id} className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg">
-                  <Folder size={18} className="text-gray-500" />
+                <div key={folder.id} className="flex items-center gap-2 px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                  <Folder size={18} className="text-gray-500 dark:text-gray-400" />
                   <input
                     autoFocus
                     type="text"
@@ -380,7 +380,7 @@ export default function Dashboard() {
                       if (e.key === 'Escape') setEditingFolderId(null);
                     }}
                     onBlur={() => handleRenameFolderSubmit(folder.id)}
-                    className="bg-transparent border-none outline-none text-sm font-medium text-gray-900 w-full"
+                    className="bg-transparent border-none outline-none text-sm font-medium text-gray-900 dark:text-white w-full"
                   />
                 </div>
               );
@@ -395,17 +395,17 @@ export default function Dashboard() {
               >
                 <button 
                   onClick={() => setActiveFolder(folder.id)}
-                  className={`w-full flex items-center justify-between px-3 py-2 font-medium rounded-lg transition-colors ${isActive ? 'bg-gray-200 text-gray-900' : 'text-gray-600 hover:bg-gray-100'}`}
+                  className={`w-full flex items-center justify-between px-3 py-2 font-medium rounded-lg transition-colors ${isActive ? 'bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800/50'}`}
                 >
                   <div className="flex items-center gap-3 overflow-hidden">
-                    <Folder size={18} className={isActive ? 'text-blue-600' : 'text-blue-500'} /> 
+                    <Folder size={18} className={isActive ? 'text-blue-600 dark:text-blue-500' : 'text-blue-500 dark:text-blue-400'} /> 
                     <span className="truncate">{folder.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">{count}</span>
+                    <span className="text-xs text-gray-400 dark:text-gray-500">{count}</span>
                     <button 
                       onClick={(e) => { e.stopPropagation(); setActiveFolderMenu(activeFolderMenu === folder.id ? null : folder.id); }}
-                      className={`p-0.5 rounded-md hover:bg-gray-300 text-gray-500 ${activeFolderMenu === folder.id ? 'opacity-100 bg-gray-300' : 'opacity-0 group-hover/folder:opacity-100'}`}
+                      className={`p-0.5 rounded-md hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 ${activeFolderMenu === folder.id ? 'opacity-100 bg-gray-300 dark:bg-gray-700' : 'opacity-0 group-hover/folder:opacity-100'}`}
                     >
                       <MoreVertical size={14} />
                     </button>
@@ -413,7 +413,7 @@ export default function Dashboard() {
                 </button>
 
                 {activeFolderMenu === folder.id && (
-                  <div className="absolute right-0 top-full mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-20 overflow-hidden">
+                  <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 py-1 z-20 overflow-hidden">
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
@@ -421,7 +421,7 @@ export default function Dashboard() {
                         setEditingFolderName(folder.name);
                         setActiveFolderMenu(null);
                       }}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm flex items-center gap-2 text-gray-700"
+                      className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm flex items-center gap-2 text-gray-700 dark:text-gray-300"
                     >
                       <Edit2 size={14} /> Rename
                     </button>
@@ -431,7 +431,7 @@ export default function Dashboard() {
                         handleDeleteFolder(folder.id);
                         setActiveFolderMenu(null);
                       }}
-                      className="w-full text-left px-3 py-2 hover:bg-red-50 text-sm flex items-center gap-2 text-red-600"
+                      className="w-full text-left px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/30 text-sm flex items-center gap-2 text-red-600 dark:text-red-400"
                     >
                       <Trash2 size={14} /> Delete
                     </button>
@@ -487,69 +487,69 @@ export default function Dashboard() {
           )}
         </div>
 
-        <div className="mt-auto border-t border-gray-200 pt-4 flex items-center gap-3 px-2">
-          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-blue-700 shrink-0">
+        <div className="mt-auto border-t border-gray-200 dark:border-gray-800 pt-4 flex items-center gap-3 px-2">
+          <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-sm font-bold text-blue-700 dark:text-blue-400 shrink-0">
             {user.email ? user.email.substring(0, 2).toUpperCase() : 'U'}
           </div>
           <div className="flex-1 overflow-hidden">
-            <div className="text-sm font-semibold truncate text-gray-900">{displayName}</div>
-            <div className="text-xs text-gray-500 truncate">Free Plan</div>
+            <div className="text-sm font-semibold truncate text-gray-900 dark:text-white">{displayName}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 truncate">Free Plan</div>
           </div>
-          <button onClick={handleSignOut} className="text-gray-400 hover:text-red-600 transition-colors" title="Sign Out">
+          <button onClick={handleSignOut} className="text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Sign Out">
             <LogOut size={16} />
           </button>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col bg-white overflow-hidden relative">
+      <div className="flex-1 flex flex-col bg-white dark:bg-gray-950 overflow-hidden relative">
         {/* Top Header */}
-        <div className="h-20 border-b border-gray-100 flex items-center px-8 justify-between shrink-0">
+        <div className="h-20 border-b border-gray-100 dark:border-gray-800 flex items-center px-8 justify-between shrink-0">
           <div className="flex items-center gap-4">
-            <h1 className="font-extrabold text-2xl text-gray-900 tracking-tight">{getTimeGreeting()}, {displayName}</h1>
-            <div className="h-6 w-px bg-gray-300 rounded-full"></div>
-            <div className="flex items-center gap-2 text-gray-500 font-medium">
+            <h1 className="font-extrabold text-2xl text-gray-900 dark:text-white tracking-tight">{getTimeGreeting()}, {displayName}</h1>
+            <div className="h-6 w-px bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 font-medium">
               {activeFolder !== 'all' ? (
                 <>
                   <button onClick={() => setActiveFolder('all')} className="hover:text-blue-600 transition-colors">All Canvases</button>
                   <ChevronRight size={16} />
-                  <span className="text-gray-900">{activeFolder === 'uncategorized' ? 'Uncategorized' : folders.find(f => f.id === activeFolder)?.name || 'Folder'}</span>
+                  <span className="text-gray-900 dark:text-white">{activeFolder === 'uncategorized' ? 'Uncategorized' : folders.find(f => f.id === activeFolder)?.name || 'Folder'}</span>
                 </>
               ) : (
-                <span className="text-gray-900">All Canvases</span>
+                <span className="text-gray-900 dark:text-white">All Canvases</span>
               )}
             </div>
           </div>
           <div className="relative w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={16} />
             <input 
               type="text" 
               placeholder="Search canvases..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium" 
+              className="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-800 rounded-xl py-2 pl-10 pr-4 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-500/50 focus:border-transparent font-medium placeholder-gray-400 dark:placeholder-gray-500" 
             />
           </div>
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto bg-gray-50/50">
+        <div className="flex-1 overflow-y-auto bg-gray-50/50 dark:bg-transparent">
           {loading ? (
-            <div className="flex-1 flex flex-col items-center justify-center h-full text-gray-400 gap-3">
+            <div className="flex-1 flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500 gap-3">
               <Loader2 size={32} className="animate-spin text-blue-500" />
               <p className="font-medium">Loading canvases...</p>
             </div>
           ) : safeCanvases.length === 0 ? (
             // Empty State
             <div className="flex flex-col items-center justify-center h-full max-w-md mx-auto text-center px-4">
-              <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-6">
-                <FileText size={40} className="text-blue-500" />
+              <div className="w-24 h-24 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mb-6">
+                <FileText size={40} className="text-blue-500 dark:text-blue-400" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">No canvases yet</h2>
-              <p className="text-gray-500 mb-8 font-medium">Create your first canvas to start jotting down ideas, drawing diagrams, or collaborating with others.</p>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">No canvases yet</h2>
+              <p className="text-gray-500 dark:text-gray-400 mb-8 font-medium">Create your first canvas to start jotting down ideas, drawing diagrams, or collaborating with others.</p>
               <button 
                 onClick={handleNewCanvas}
-                className="bg-gray-900 text-white px-6 py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-lg flex items-center gap-2"
+                className="bg-gray-900 dark:bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors shadow-lg dark:shadow-blue-900/20 flex items-center gap-2"
               >
                 <Plus size={18} /> Create your first canvas
               </button>
@@ -559,7 +559,7 @@ export default function Dashboard() {
             <div className="p-8">
               {filteredCanvases.length === 0 ? (
                 <div className="text-center py-20">
-                  <p className="text-gray-500 font-medium">No canvases found in this view.</p>
+                  <p className="text-gray-500 dark:text-gray-400 font-medium">No canvases found in this view.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

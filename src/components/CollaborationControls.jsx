@@ -16,10 +16,10 @@ export const CollaborationControls = ({ canvasMeta, setCanvasMeta, user, awarene
     window.dispatchEvent(new CustomEvent('canvasLockChanged', { detail: newLocked }));
   };
 
-  const Divider = () => <div className="w-px h-5 bg-gray-200 mx-1" />;
+  const Divider = () => <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />;
 
   return (
-    <div className="absolute top-3 right-4 z-[300] bg-white/90 backdrop-blur-md rounded-xl shadow-sm border border-gray-200 flex items-center p-1 h-10 pointer-events-auto">
+    <div className="absolute top-3 right-4 z-[300] bg-white/90 dark:bg-gray-900/90 backdrop-blur-md rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 flex items-center p-1 h-10 pointer-events-auto transition-colors duration-300">
       
       {/* Presence Bar (Avatars) */}
       <div className="flex items-center px-2">
@@ -39,7 +39,7 @@ export const CollaborationControls = ({ canvasMeta, setCanvasMeta, user, awarene
       <div className="flex items-center px-1">
         <button 
           onClick={onToggleTimeline} 
-          className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${isTimelineOpen ? 'text-blue-600 bg-blue-50' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`} 
+          className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${isTimelineOpen ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800'}`} 
           title="Board Timeline"
         >
           <Clock size={16} />
@@ -52,7 +52,7 @@ export const CollaborationControls = ({ canvasMeta, setCanvasMeta, user, awarene
       <div className="flex items-center px-1">
         <button 
           onClick={toggleLock} 
-          className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${isLocked ? 'text-red-500 bg-red-50 hover:bg-red-100' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`} 
+          className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${isLocked ? 'text-red-500 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800'}`} 
           title={isLocked ? "Unlock Canvas" : "Lock Canvas"}
         >
           {isLocked ? <Lock size={16} /> : <Unlock size={16} />}

@@ -112,21 +112,21 @@ export default function GraphBuilderModal({ isOpen, onClose, editor, editingGrap
         onClick={onClose}
       />
       
-      <div className="relative bg-white w-full max-w-4xl h-[600px] flex flex-col rounded-2xl shadow-2xl overflow-hidden border border-gray-200 m-4 animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative bg-white dark:bg-gray-950 w-full max-w-4xl h-[600px] flex flex-col rounded-2xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-800 m-4 animate-in fade-in zoom-in-95 duration-200 transition-colors duration-300">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50/50">
-          <h2 className="text-lg font-bold text-gray-800">Graph Builder</h2>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50">
+          <h2 className="text-lg font-bold text-gray-800 dark:text-white">Graph Builder</h2>
           <button 
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+            className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Body: Desmos Instance */}
-        <div className="flex-1 w-full bg-white relative">
+        <div className="flex-1 w-full bg-white dark:bg-gray-950 relative">
           <div 
             ref={containerRef} 
             className="absolute inset-0"
@@ -134,10 +134,10 @@ export default function GraphBuilderModal({ isOpen, onClose, editor, editingGrap
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3">
+        <div className="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 flex justify-end gap-3">
           <button 
             onClick={onClose}
-            className="px-5 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-200 rounded-xl transition-all"
+            className="px-5 py-2.5 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800 rounded-xl transition-all"
           >
             Cancel
           </button>

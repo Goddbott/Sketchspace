@@ -87,8 +87,8 @@ export default function TagSelector({
 
       {isAdding && (
         <div className="relative">
-          <div className="flex items-center bg-gray-100 rounded-md px-2 py-0.5 border border-gray-200">
-            <Tag size={10} className="text-gray-400 mr-1" />
+          <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-md px-2 py-0.5 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
+            <Tag size={10} className="text-gray-400 dark:text-gray-500 mr-1" />
             <input
               ref={inputRef}
               type="text"
@@ -96,18 +96,18 @@ export default function TagSelector({
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Tag name..."
-              className="bg-transparent text-[11px] font-medium outline-none w-20 text-gray-700 placeholder-gray-400"
+              className="bg-transparent text-[11px] font-medium outline-none w-20 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500"
             />
           </div>
           
           {/* Autocomplete Dropdown */}
-          <div className="absolute top-full left-0 mt-1 w-40 bg-white border border-gray-200 shadow-xl rounded-lg py-1 z-50 max-h-40 overflow-y-auto">
+          <div className="absolute top-full left-0 mt-1 w-40 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl rounded-lg py-1 z-50 max-h-40 overflow-y-auto transition-colors duration-300">
             {filteredTags.length > 0 ? (
               filteredTags.map(tag => (
                 <button
                   key={tag.id}
                   onClick={(e) => { e.stopPropagation(); handleSelectExisting(tag); }}
-                  className="w-full text-left px-3 py-1.5 hover:bg-gray-50 flex items-center gap-2 text-[12px] font-medium text-gray-700"
+                  className="w-full text-left px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2 text-[12px] font-medium text-gray-700 dark:text-gray-300 transition-colors"
                 >
                   <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: tag.color }}></span>
                   {tag.name}
@@ -116,12 +116,12 @@ export default function TagSelector({
             ) : inputValue.trim() ? (
               <button
                 onClick={(e) => { e.stopPropagation(); handleKeyDown({ key: 'Enter', preventDefault: () => {} }); }}
-                className="w-full text-left px-3 py-1.5 hover:bg-gray-50 text-[12px] font-medium text-blue-600 flex items-center gap-1"
+                className="w-full text-left px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800 text-[12px] font-medium text-blue-600 dark:text-blue-400 flex items-center gap-1 transition-colors"
               >
                 <Plus size={12} /> Create "{inputValue}"
               </button>
             ) : (
-              <div className="px-3 py-2 text-[11px] text-gray-500 italic">
+              <div className="px-3 py-2 text-[11px] text-gray-500 dark:text-gray-400 italic">
                 Type to search or create
               </div>
             )}

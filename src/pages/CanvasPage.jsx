@@ -137,14 +137,14 @@ const FindWidget = ({ editor }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="absolute top-4 right-16 z-[300] bg-white rounded-xl shadow-lg border border-gray-200 p-2 flex items-center gap-2 pointer-events-auto">
+    <div className="absolute top-4 right-16 z-[300] bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 p-2 flex items-center gap-2 pointer-events-auto transition-colors duration-300">
       <Search size={16} className="text-gray-400 ml-1" />
       <input 
         autoFocus
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Find on canvas..."
-        className="outline-none text-sm w-40 bg-transparent"
+        className="outline-none text-sm w-40 bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             jumpTo(e.shiftKey ? currentIndex - 1 : currentIndex + 1);
@@ -158,14 +158,14 @@ const FindWidget = ({ editor }) => {
           {matches.length > 0 ? `${currentIndex + 1}/${matches.length}` : '0/0'}
         </span>
       )}
-      <div className="flex items-center gap-1 border-l border-gray-200 pl-2">
-        <button onClick={() => jumpTo(currentIndex - 1)} className="p-1 text-gray-500 hover:bg-gray-100 rounded-md">
+      <div className="flex items-center gap-1 border-l border-gray-200 dark:border-gray-700 pl-2">
+        <button onClick={() => jumpTo(currentIndex - 1)} className="p-1 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
           <ChevronUp size={16} />
         </button>
-        <button onClick={() => jumpTo(currentIndex + 1)} className="p-1 text-gray-500 hover:bg-gray-100 rounded-md">
+        <button onClick={() => jumpTo(currentIndex + 1)} className="p-1 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors">
           <ChevronDown size={16} />
         </button>
-        <button onClick={() => setIsOpen(false)} className="p-1 text-gray-500 hover:bg-gray-100 rounded-md ml-1">
+        <button onClick={() => setIsOpen(false)} className="p-1 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md ml-1 transition-colors">
           <X size={16} />
         </button>
       </div>
@@ -197,7 +197,7 @@ const CustomBackground = () => {
         <svg width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="bg_grid_lines" width={s} height={s} patternUnits="userSpaceOnUse" patternTransform={`translate(${xo}, ${yo})`}>
-              <line x1="0" y1="0" x2={s} y2="0" stroke="#e2e8f0" strokeWidth="1.5" />
+              <line x1="0" y1="0" x2={s} y2="0" className="stroke-slate-200 dark:stroke-gray-800" strokeWidth="1.5" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#bg_grid_lines)" />
@@ -212,7 +212,7 @@ const CustomBackground = () => {
         <svg width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="bg_grid_cross" width={s} height={s} patternUnits="userSpaceOnUse" patternTransform={`translate(${xo}, ${yo})`}>
-              <path d={`M ${s} 0 L 0 0 0 ${s}`} fill="none" stroke="#e2e8f0" strokeWidth="1.5" />
+              <path d={`M ${s} 0 L 0 0 0 ${s}`} fill="none" className="stroke-slate-200 dark:stroke-gray-900" strokeWidth="1.5" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#bg_grid_cross)" />
@@ -227,7 +227,7 @@ const CustomBackground = () => {
       <svg width="100%" height="100%" version="1.1" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <pattern id="bg_grid_dots" width={s} height={s} patternUnits="userSpaceOnUse" patternTransform={`translate(${xo}, ${yo})`}>
-            <circle cx="1" cy="1" r={1.5} fill="#cbd5e1" />
+            <circle cx="1" cy="1" r={1.5} className="fill-slate-300 dark:fill-gray-800" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#bg_grid_dots)" />
@@ -325,10 +325,10 @@ const CustomZoomMenu = () => {
   const zoomLevel = useValue('zoom', () => editor.getZoomLevel(), [editor]);
 
   return (
-    <div className="absolute bottom-4 left-4 z-[300] bg-white/90 backdrop-blur-md rounded-xl shadow-sm border border-gray-200 flex items-center p-1 gap-1 pointer-events-auto h-10">
+    <div className="absolute bottom-4 left-4 z-[300] bg-white/90 dark:bg-gray-900/90 backdrop-blur-md rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 flex items-center p-1 gap-1 pointer-events-auto h-10 transition-colors duration-300">
       <button
         onClick={() => editor.zoomOut()}
-        className="w-8 h-8 flex flex-shrink-0 items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-[8px] transition-colors"
+        className="w-8 h-8 flex flex-shrink-0 items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-[8px] transition-colors"
         title="Zoom Out"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -336,7 +336,7 @@ const CustomZoomMenu = () => {
       
       <button 
         onClick={() => editor.resetZoom()}
-        className="px-1 text-[13px] font-semibold text-gray-800 min-w-[3rem] text-center hover:bg-gray-100 rounded-[8px] h-8 transition-colors flex-shrink-0"
+        className="px-1 text-[13px] font-semibold text-gray-800 dark:text-gray-200 min-w-[3rem] text-center hover:bg-gray-100 dark:hover:bg-gray-800 rounded-[8px] h-8 transition-colors flex-shrink-0"
         title="Reset Zoom"
       >
         {Math.round(zoomLevel * 100)}%
@@ -344,7 +344,7 @@ const CustomZoomMenu = () => {
 
       <button
         onClick={() => editor.zoomIn()}
-        className="w-8 h-8 flex flex-shrink-0 items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-[8px] transition-colors"
+        className="w-8 h-8 flex flex-shrink-0 items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-[8px] transition-colors"
         title="Zoom In"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -372,7 +372,7 @@ const CanvasMetadataUI = ({ canvasMeta, setCanvasMeta }) => {
   };
 
   return (
-    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[250] bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-xl shadow-sm border border-gray-200 pointer-events-auto flex items-center justify-center min-w-[150px] max-w-[400px] h-10">
+    <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[250] bg-white/90 dark:bg-gray-900/90 backdrop-blur-md px-4 py-1.5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 pointer-events-auto flex items-center justify-center min-w-[150px] max-w-[400px] h-10 transition-colors duration-300">
       {isEditingName ? (
         <input 
           autoFocus
@@ -380,12 +380,12 @@ const CanvasMetadataUI = ({ canvasMeta, setCanvasMeta }) => {
           onChange={e => setNameVal(e.target.value)}
           onBlur={handleRename}
           onKeyDown={e => { if (e.key === 'Enter') handleRename(); if (e.key === 'Escape') { setIsEditingName(false); setNameVal(canvasMeta.name || 'Untitled Canvas'); } }}
-          className="font-semibold text-sm text-gray-900 bg-transparent outline-none w-full text-center"
+          className="font-semibold text-sm text-gray-900 dark:text-gray-100 bg-transparent outline-none w-full text-center"
         />
       ) : (
         <div 
           onClick={() => setIsEditingName(true)}
-          className="font-semibold text-sm text-gray-800 truncate cursor-pointer hover:text-blue-600 transition-colors w-full text-center"
+          className="font-semibold text-sm text-gray-800 dark:text-gray-200 truncate cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors w-full text-center"
           title="Click to rename"
         >
           {canvasMeta.name || 'Untitled Canvas'}
@@ -401,7 +401,7 @@ import { Cursors } from '../components/Cursors';
 import { CustomTopLeftMenu } from '../components/CustomTopLeftMenu';
 import { CollaborationControls } from '../components/CollaborationControls';
 
-const MainCanvas = ({ page, setPage }) => {
+const MainCanvas = ({ page, setPage, darkMode }) => {
   const { canvasId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -562,7 +562,7 @@ const MainCanvas = ({ page, setPage }) => {
         if (shapeIds.length > 0) {
           try {
             // Generate SVG thumbnail silently in the background
-            const svgResult = await currentEditor.getSvgString(shapeIds, { background: true, padding: 32 });
+            const svgResult = await currentEditor.getSvgString(shapeIds, { background: false, padding: 32, darkMode: false });
             
             if (svgResult?.svg) {
               // Encode SVG directly as a data URI to bypass Supabase Storage issues
@@ -684,7 +684,7 @@ const MainCanvas = ({ page, setPage }) => {
 
   if (accessLevel === 'loading' || storeWithStatus.status === 'loading') {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-50 h-full w-full">
+      <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-950 h-full w-full">
         <div className="text-gray-400 font-medium">Loading Canvas...</div>
       </div>
     );
@@ -692,7 +692,7 @@ const MainCanvas = ({ page, setPage }) => {
 
   if (error) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 h-full w-full gap-4">
+      <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-950 h-full w-full gap-4">
         <h2 className="text-xl font-bold text-gray-800">
           {accessDenied ? "This canvas is private" : "This canvas has expired or doesn't exist"}
         </h2>
@@ -712,11 +712,12 @@ const MainCanvas = ({ page, setPage }) => {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-white overflow-hidden relative w-full h-full">
+    <div className="flex-1 flex flex-col bg-white dark:bg-gray-950 overflow-hidden relative w-full h-full transition-colors duration-300">
       {/* Tldraw Infinite Canvas Component */}
       <div className="absolute inset-0 z-0">
         <Tldraw 
           licenseKey={import.meta.env.VITE_TLDRAW_LICENSE_KEY}
+          colorScheme={darkMode ? 'dark' : 'light'}
           store={storeWithStatus.store}
           shapeUtils={customShapeUtils} 
           onMount={(ed) => {
@@ -795,6 +796,7 @@ const MainCanvas = ({ page, setPage }) => {
           isOpen={isTimelineOpen}
           onClose={() => setIsTimelineOpen(false)}
           canvasId={canvasId}
+          darkMode={darkMode}
         />
 
         <SignupBanner canvasId={canvasId} />

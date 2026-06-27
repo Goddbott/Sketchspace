@@ -297,22 +297,22 @@ export default function EquationToolModal({ isOpen, onClose, editor, editingEqua
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/20 backdrop-blur-sm pointer-events-auto">
       <div 
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[calc(100vh-160px)] flex flex-col border border-gray-200"
+        className="bg-white dark:bg-gray-950 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[calc(100vh-160px)] flex flex-col border border-gray-200 dark:border-gray-800 transition-colors duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-800 tracking-tight">Equation Tool</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white tracking-tight">Equation Tool</h2>
           <button 
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Tab Row */}
-        <div className="px-6 border-b border-gray-100 overflow-x-auto custom-scrollbar">
+        <div className="px-6 border-b border-gray-100 dark:border-gray-800 overflow-x-auto custom-scrollbar">
           <div className="flex gap-6 min-w-max">
             {TABS.map((tab) => (
               <button
@@ -320,8 +320,8 @@ export default function EquationToolModal({ isOpen, onClose, editor, editingEqua
                 onClick={() => setActiveTab(tab)}
                 className={`py-4 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-800'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
                 }`}
               >
                 {tab}
@@ -331,11 +331,11 @@ export default function EquationToolModal({ isOpen, onClose, editor, editingEqua
         </div>
 
         {/* Body (Side-by-side) */}
-        <div className="flex-1 overflow-hidden flex flex-col md:flex-row bg-gray-50/50">
+        <div className="flex-1 overflow-hidden flex flex-col md:flex-row bg-gray-50/50 dark:bg-gray-900/50">
           
           {/* Left: Symbol Grid Area */}
-          <div className="flex-1 p-6 overflow-y-auto custom-scrollbar border-r border-gray-100">
-            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">
+          <div className="flex-1 p-6 overflow-y-auto custom-scrollbar border-r border-gray-100 dark:border-gray-800">
+            <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
               {activeTab} Symbols
             </h3>
             {/* Grid */}
@@ -344,7 +344,7 @@ export default function EquationToolModal({ isOpen, onClose, editor, editingEqua
                 <button
                   key={i}
                   onClick={() => handleSymbolClick(symbol)}
-                  className="aspect-square bg-white border border-gray-200 rounded-lg flex items-center justify-center text-gray-700 font-medium hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 hover:shadow-sm transition-all"
+                  className="aspect-square bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center justify-center text-gray-700 dark:text-gray-200 font-medium hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:shadow-sm transition-all"
                   title={symbol.label}
                 >
                   {symbol.label}
@@ -354,17 +354,17 @@ export default function EquationToolModal({ isOpen, onClose, editor, editingEqua
           </div>
 
           {/* Right: Input & Mode Area */}
-          <div className="w-full md:w-80 flex flex-col p-6 bg-white shrink-0 overflow-y-auto custom-scrollbar">
+          <div className="w-full md:w-80 flex flex-col p-6 bg-white dark:bg-gray-950 shrink-0 overflow-y-auto custom-scrollbar">
             {/* Mode Toggle */}
-            <div className="flex bg-gray-100 p-1 rounded-lg mb-6">
+            <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg mb-6">
               {['Smart Mode', 'Raw LaTeX'].map((m) => (
                 <button
                   key={m}
                   onClick={() => setMode(m)}
                   className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-all ${
                     mode === m
-                      ? 'bg-white text-gray-800 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                   }`}
                 >
                   {m}
@@ -374,13 +374,13 @@ export default function EquationToolModal({ isOpen, onClose, editor, editingEqua
 
             {/* Input Area */}
             <div className="flex flex-col shrink-0">
-              <label className="text-sm font-semibold text-gray-700 mb-2">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Equation Input
               </label>
               
               {mode === 'Smart Mode' ? (
                 <div 
-                  className="w-full h-32 shrink-0 p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 text-lg focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all flex items-center overflow-auto"
+                  className="w-full h-32 shrink-0 p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-800 dark:text-gray-100 text-lg focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500 transition-all flex items-center overflow-auto"
                 >
                   <div 
                     ref={mathFieldRef} 
@@ -394,11 +394,11 @@ export default function EquationToolModal({ isOpen, onClose, editor, editingEqua
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   placeholder="\\frac{x^2}{y}"
-                  className="w-full h-32 shrink-0 p-4 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                  className="w-full h-32 shrink-0 p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-800 dark:text-gray-100 font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                 />
               )}
               
-              <div className="mt-2 text-xs text-gray-400">
+              <div className="mt-2 text-xs text-gray-400 dark:text-gray-500">
                 {mode === 'Smart Mode' 
                   ? 'Smart mode auto-formats standard math notations.' 
                   : 'Enter raw LaTeX code directly.'}
@@ -407,14 +407,14 @@ export default function EquationToolModal({ isOpen, onClose, editor, editingEqua
 
             {/* Live Preview Area (Only in Raw LaTeX mode) */}
             {mode === 'Raw LaTeX' && (
-              <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col min-h-[120px] shrink-0">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+              <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex flex-col min-h-[120px] shrink-0">
+                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                   Live Preview
                 </label>
-                <div className="flex-1 relative bg-white border border-gray-100 rounded-xl flex items-center justify-center p-4 overflow-hidden shadow-sm">
-                  <div ref={previewRef} className="w-full overflow-auto flex justify-center" />
+                <div className="flex-1 relative bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl flex items-center justify-center p-4 overflow-hidden shadow-sm">
+                  <div ref={previewRef} className="w-full overflow-auto flex justify-center text-gray-900 dark:text-gray-100" />
                   {!inputValue.trim() && (
-                    <span className="text-gray-400 text-sm italic absolute">Preview will appear here</span>
+                    <span className="text-gray-400 dark:text-gray-500 text-sm italic absolute">Preview will appear here</span>
                   )}
                 </div>
               </div>
@@ -423,10 +423,10 @@ export default function EquationToolModal({ isOpen, onClose, editor, editingEqua
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-gray-100 bg-white flex justify-end items-center rounded-b-2xl">
+        <div className="p-6 border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 flex justify-end items-center rounded-b-2xl">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 text-sm font-semibold text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-all mr-3"
+            className="px-5 py-2.5 text-sm font-semibold text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all mr-3"
           >
             Cancel
           </button>

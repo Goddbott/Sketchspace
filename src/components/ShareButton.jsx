@@ -29,7 +29,7 @@ export default function ShareButton({ canvasMeta, setCanvasMeta, user }) {
     <>
       <button
         onClick={handleShare}
-        className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100 transition-colors text-xs font-semibold border border-blue-100"
+        className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors text-xs font-semibold border border-blue-100 dark:border-blue-800/50"
       >
         {copied ? <Check size={14} /> : <Share2 size={14} />}
         {copied ? 'Copied!' : 'Share'}

@@ -86,10 +86,10 @@ export default function SharingModal({ isOpen, onClose, canvasMeta, setCanvasMet
 
   return createPortal(
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">Share Canvas</h2>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors">
+      <div className="bg-white dark:bg-gray-950 rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col border border-transparent dark:border-gray-800 transition-colors duration-300">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Share Canvas</h2>
+          <button onClick={onClose} className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
             <X size={20} />
           </button>
         </div>
@@ -97,31 +97,31 @@ export default function SharingModal({ isOpen, onClose, canvasMeta, setCanvasMet
         <div className="p-4 flex flex-col gap-6">
           {/* General Access */}
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-gray-900">General Access</h3>
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
-              <div className="p-2 bg-white rounded-lg shadow-sm">
-                {accessLevel === 'private' ? <Lock size={18} className="text-gray-500" /> : <Globe size={18} className="text-blue-500" />}
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-200">General Access</h3>
+            <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-200 dark:border-gray-800">
+              <div className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                {accessLevel === 'private' ? <Lock size={18} className="text-gray-500 dark:text-gray-400" /> : <Globe size={18} className="text-blue-500 dark:text-blue-400" />}
               </div>
               <div className="flex-1">
                 <select 
                   value={accessLevel}
                   onChange={handleAccessChange}
                   disabled={loadingAccess}
-                  className="w-full bg-transparent font-medium text-sm text-gray-900 outline-none cursor-pointer"
+                  className="w-full bg-transparent font-medium text-sm text-gray-900 dark:text-gray-100 outline-none cursor-pointer"
                 >
-                  <option value="private">Private (Only you & invited)</option>
-                  <option value="view">Anyone with the link can view</option>
-                  <option value="edit">Anyone with the link can edit</option>
+                  <option value="private" className="dark:bg-gray-900">Private (Only you & invited)</option>
+                  <option value="view" className="dark:bg-gray-900">Anyone with the link can view</option>
+                  <option value="edit" className="dark:bg-gray-900">Anyone with the link can edit</option>
                 </select>
               </div>
             </div>
           </div>
 
-          <hr className="border-gray-100" />
+          <hr className="border-gray-100 dark:border-gray-800" />
 
           {/* Explicit Invites */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-gray-900">Invite Collaborators</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-200">Invite Collaborators</h3>
             <form onSubmit={handleInvite} className="flex gap-2">
               <input 
                 type="email" 
@@ -129,12 +129,12 @@ export default function SharingModal({ isOpen, onClose, canvasMeta, setCanvasMet
                 value={inviteEmail}
                 onChange={e => setInviteEmail(e.target.value)}
                 required
-                className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="flex-1 px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors"
               />
               <select 
                 value={inviteRole}
                 onChange={e => setInviteRole(e.target.value)}
-                className="px-2 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none cursor-pointer focus:border-blue-500"
+                className="px-2 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg text-sm text-gray-900 dark:text-white outline-none cursor-pointer focus:border-blue-500 transition-colors"
               >
                 <option value="viewer">Viewer</option>
                 <option value="editor">Editor</option>
@@ -151,28 +151,28 @@ export default function SharingModal({ isOpen, onClose, canvasMeta, setCanvasMet
             {/* List */}
             <div className="space-y-2 mt-4 max-h-40 overflow-y-auto">
               {collaborators.length === 0 ? (
-                <div className="text-xs text-gray-500 italic text-center py-2">No collaborators invited yet</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 italic text-center py-2">No collaborators invited yet</div>
               ) : (
                 collaborators.map(c => (
-                  <div key={c.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg group transition-colors">
+                  <div key={c.id} className="flex items-center justify-between p-2 hover:bg-gray-50 dark:hover:bg-gray-900/50 rounded-lg group transition-colors">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-700">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xs font-bold text-blue-700 dark:text-blue-400">
                         {c.email.substring(0, 2).toUpperCase()}
                       </div>
-                      <div className="text-sm font-medium text-gray-900">{c.email}</div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-200">{c.email}</div>
                     </div>
                     <div className="flex items-center gap-2">
                       <select 
                         value={c.role}
                         onChange={(e) => handleChangeRole(c.id, e.target.value)}
-                        className="text-xs font-medium text-gray-600 bg-transparent outline-none cursor-pointer hover:bg-gray-200 p-1 rounded"
+                        className="text-xs font-medium text-gray-600 dark:text-gray-400 bg-transparent outline-none cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800 p-1 rounded transition-colors"
                       >
-                        <option value="viewer">Viewer</option>
-                        <option value="editor">Editor</option>
+                        <option value="viewer" className="dark:bg-gray-900">Viewer</option>
+                        <option value="editor" className="dark:bg-gray-900">Editor</option>
                       </select>
                       <button 
                         onClick={() => handleRemoveCollab(c.id)}
-                        className="p-1 text-gray-400 hover:text-red-500 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                         title="Remove"
                       >
                         <Trash2 size={14} />
@@ -184,13 +184,13 @@ export default function SharingModal({ isOpen, onClose, canvasMeta, setCanvasMet
             </div>
           </div>
 
-          <div className="pt-4 mt-2 border-t border-gray-100 flex justify-between items-center">
-             <span className="text-xs text-gray-500 font-medium">Link gives access based on settings above</span>
+          <div className="pt-4 mt-2 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center">
+             <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Link gives access based on settings above</span>
              <button 
                 onClick={handleCopyLink}
-                className="flex items-center gap-1.5 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg text-sm font-semibold transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg text-sm font-semibold transition-colors"
              >
-                {copied ? <Check size={16} className="text-green-600" /> : <Globe size={16} />}
+                {copied ? <Check size={16} className="text-green-600 dark:text-green-400" /> : <Globe size={16} />}
                 {copied ? 'Copied!' : 'Copy Link'}
              </button>
           </div>
