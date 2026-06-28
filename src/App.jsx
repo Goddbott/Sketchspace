@@ -10,76 +10,23 @@ import { AuthProvider, useAuth } from './lib/AuthContext';
 
 function AppLayout() {
   const [darkMode, setDarkMode] = useState(false);
-  const [isNavOpen, setIsNavOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-
-  let activePage = 'Landing';
-  if (location.pathname.startsWith('/dashboard')) activePage = 'Dashboard';
-  if (location.pathname.startsWith('/canvas')) activePage = 'Canvas';
-  if (location.pathname.startsWith('/auth')) activePage = 'Auth';
-
-  const tabs = ['Landing', 'Canvas', 'Dashboard'];
-
-  const handleTabClick = (tab) => {
-    if (tab === 'Landing') navigate('/');
-    if (tab === 'Dashboard') {
-      if (user) {
-        navigate('/dashboard');
-      } else {
-        navigate('/auth');
-      }
-    }
-    // If clicking canvas directly from tabs without ID, it will redirect to / which redirects to a new canvas
-    if (tab === 'Canvas') navigate('/');
-  };
 
   return (
     <div className={`w-screen h-screen overflow-hidden flex relative font-sans transition-colors duration-300 ${darkMode ? 'dark bg-gray-800' : 'bg-gray-900'} p-3 sm:p-2`}>
       
       {/* Global Navigation Tab Bar (Moved to bottom right to avoid conflicts) */}
 
-        <div className="absolute bottom-6 right-6 z-50 flex bg-white/90 dark:bg-gray-900/90 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-800 p-1 pointer-events-auto transition-all duration-300">
-        {!isNavOpen ? (
-          <button 
-            onClick={() => setIsNavOpen(true)}
-            className="p-2 px-3 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors flex items-center gap-2 font-semibold text-sm"
-          >
-            <Menu size={18} />
-          </button>
-        ) : (
-          <>
-            <button 
-              onClick={() => setIsNavOpen(false)}
-              className="p-2 mr-1 rounded-xl text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors"
-              title="Collapse Menu"
-            >
-              <ChevronRight size={18} />
-            </button>
-            <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 my-auto mx-1"></div>
-            {tabs.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => handleTabClick(tab)}
-                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                  activePage === tab || (activePage === 'Auth' && tab === 'Dashboard')
-                    ? 'bg-blue-500 text-white shadow-sm shadow-blue-500/20'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-gray-800/50'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-            <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 my-auto mx-2"></div>
-            <button 
-              onClick={() => setDarkMode(!darkMode)}
-              className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors"
-            >
-              {darkMode ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-          </>
-        )}
+      <div className="absolute bottom-6 right-6 z-50 flex bg-white/90 dark:bg-gray-900/90 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/50 dark:border-gray-800 p-1 pointer-events-auto transition-all duration-300">
+        <button 
+          onClick={() => setDarkMode(!darkMode)}
+          className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors"
+          title="Toggle Theme"
+        >
+          {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
       </div>
 
 

@@ -9,6 +9,7 @@ import {
   listTags, createTag, deleteTag, assignTagToCanvas, removeTagFromCanvas 
 } from '../lib/canvasApi';
 import CanvasCard from '../components/CanvasCard';
+import ConfirmModal from '../components/ConfirmModal';
 
 // Utility to generate a consistent color from a string
 function stringToColor(str) {
@@ -41,6 +42,24 @@ export default function Dashboard() {
   
   const [tags, setTags] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
+
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, title: '', message: '', onConfirm: null });
+
+  const confirmAction = (title, message, onConfirmCallback) => {
+    setConfirmModal({
+      isOpen: true,
+      title,
+      message,
+      onConfirm: async () => {
+        await onConfirmCallback();
+        setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: null });
+      }
+    });
+  };
+
+  const handleCancelConfirm = () => {
+    setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: null });
+  };
 
   const userId = user?.id;
 
@@ -107,14 +126,18 @@ export default function Dashboard() {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this canvas? This cannot be undone.")) {
-      try {
-        setCanvases(prev => prev.filter(c => c.id !== id));
-        await deleteCanvas(id);
-      } catch (e) {
-        console.error("Delete failed", e);
+    confirmAction(
+      "Delete Canvas",
+      "Are you sure you want to delete this canvas? This cannot be undone.",
+      async () => {
+        try {
+          setCanvases(prev => prev.filter(c => c.id !== id));
+          await deleteCanvas(id);
+        } catch (e) {
+          console.error("Delete failed", e);
+        }
       }
-    }
+    );
   };
 
   const handleDuplicate = async (sourceId) => {
@@ -157,19 +180,23 @@ export default function Dashboard() {
   };
 
   const handleDeleteFolder = async (folderId) => {
-    if (window.confirm("Are you sure you want to delete this folder? Your canvases will be moved to Uncategorized.")) {
-      try {
-        setFolders(prev => prev.filter(f => f.id !== folderId));
-        if (activeFolder === folderId) setActiveFolder('all');
-        
-        // Optimistically move canvases to uncategorized
-        setCanvases(prev => prev.map(c => c.folder_id === folderId ? { ...c, folder_id: null } : c));
-        
-        await deleteFolder(folderId);
-      } catch (e) {
-        console.error("Delete folder failed", e);
+    confirmAction(
+      "Delete Folder",
+      "Are you sure you want to delete this folder? Your canvases will be moved to Uncategorized.",
+      async () => {
+        try {
+          setFolders(prev => prev.filter(f => f.id !== folderId));
+          if (activeFolder === folderId) setActiveFolder('all');
+          
+          // Optimistically move canvases to uncategorized
+          setCanvases(prev => prev.map(c => c.folder_id === folderId ? { ...c, folder_id: null } : c));
+          
+          await deleteFolder(folderId);
+        } catch (e) {
+          console.error("Delete folder failed", e);
+        }
       }
-    }
+    );
   };
 
   const handleMoveToFolder = async (canvasId, folderId) => {
@@ -233,25 +260,29 @@ export default function Dashboard() {
   };
 
   const handleDeleteTag = async (tagId) => {
-    if (window.confirm("Are you sure you want to delete this tag? It will be removed from all canvases.")) {
-      // Remove from selected filters
-      setSelectedTags(prev => prev.filter(id => id !== tagId));
-      
-      // Optimistically remove from all canvases
-      setCanvases(prev => prev.map(c => ({
-        ...c,
-        tags: (c.tags || []).filter(t => t.id !== tagId)
-      })));
-      
-      // Remove from global tags
-      setTags(prev => prev.filter(t => t.id !== tagId));
-      
-      try {
-        await deleteTag(tagId);
-      } catch (e) {
-        console.error("Failed to delete tag", e);
+    confirmAction(
+      "Delete Tag",
+      "Are you sure you want to delete this tag? It will be removed from all canvases.",
+      async () => {
+        // Remove from selected filters
+        setSelectedTags(prev => prev.filter(id => id !== tagId));
+        
+        // Optimistically remove from all canvases
+        setCanvases(prev => prev.map(c => ({
+          ...c,
+          tags: (c.tags || []).filter(t => t.id !== tagId)
+        })));
+        
+        // Remove from global tags
+        setTags(prev => prev.filter(t => t.id !== tagId));
+        
+        try {
+          await deleteTag(tagId);
+        } catch (e) {
+          console.error("Failed to delete tag", e);
+        }
       }
-    }
+    );
   };
 
   const handleDragOver = (e) => {
@@ -584,6 +615,15 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmModal 
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={handleCancelConfirm}
+      />
     </div>
   );
 }

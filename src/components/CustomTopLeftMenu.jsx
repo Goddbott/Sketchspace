@@ -144,7 +144,7 @@ export const CustomTopLeftMenu = ({ onOpenEquationModal, onOpenGraphModal, isGra
           {/* Equation Tool Button */}
           <button 
             onClick={onOpenEquationModal} 
-            className="w-8 h-8 ml-1 flex items-center justify-center rounded-lg text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors"
+            className="w-8 h-8 ml-1 flex items-center justify-center rounded-lg transition-colors text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
             title="Equation Tool"
           >
             <Sigma size={16} />

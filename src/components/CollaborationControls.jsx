@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Lock, Unlock, Clock } from 'lucide-react';
+import { Lock, Unlock, Clock, Hexagon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { PresenceBar } from './PresenceBar';
 import ShareButton from './ShareButton';
 
 export const CollaborationControls = ({ canvasMeta, setCanvasMeta, user, awareness, isTimelineOpen, onToggleTimeline }) => {
   const [isLocked, setIsLocked] = useState(window.canvasIsLocked || false);
+  const navigate = useNavigate();
 
   const toggleLock = () => {
     const newLocked = !isLocked;
@@ -56,6 +58,20 @@ export const CollaborationControls = ({ canvasMeta, setCanvasMeta, user, awarene
           title={isLocked ? "Unlock Canvas" : "Lock Canvas"}
         >
           {isLocked ? <Lock size={16} /> : <Unlock size={16} />}
+        </button>
+      </div>
+
+      <Divider />
+
+      {/* Home / Logo */}
+      <div className="flex items-center px-1">
+        <button 
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center justify-center gap-1.5 px-2 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          title="Back to Dashboard"
+        >
+          <Hexagon size={16} className="text-blue-500" fill="currentColor" />
+          <span className="font-bold text-sm tracking-tight text-gray-900 dark:text-white hidden sm:block">Sketchspace</span>
         </button>
       </div>
 

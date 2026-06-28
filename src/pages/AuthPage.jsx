@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { migrateAnonymousCanvas } from '../lib/canvasApi';
+import { useAuth } from '../lib/AuthContext';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -12,6 +13,13 @@ export default function AuthPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const handleAuth = async (e) => {
     e.preventDefault();
