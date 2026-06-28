@@ -10,6 +10,8 @@ import {
 } from '../lib/canvasApi';
 import CanvasCard from '../components/CanvasCard';
 import ConfirmModal from '../components/ConfirmModal';
+import logoLight from '../assets/SketchSpace Light Mode.svg';
+import logoDark from '../assets/SketchSpace Dark Mode.svg';
 
 // Utility to generate a consistent color from a string
 function stringToColor(str) {
@@ -335,8 +337,9 @@ export default function Dashboard() {
     <div className="flex-1 flex bg-white dark:bg-gray-950 overflow-hidden">
       {/* Sidebar Navigation */}
       <div className="w-64 border-r border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 flex flex-col p-4 shrink-0">
-        <div className="flex items-center gap-2 font-bold text-xl text-gray-900 dark:text-white mb-8 px-2">
-          <span className="text-2xl">🥽</span> SketchSpace
+        <div className="flex items-center justify-center mb-8 px-2">
+          <img src={logoLight} alt="SketchSpace" className="h-8 w-auto dark:hidden block" />
+          <img src={logoDark} alt="SketchSpace" className="h-8 w-auto hidden dark:block" />
         </div>
         
         <button onClick={handleNewCanvas} className="w-full bg-blue-600 text-white rounded-xl py-2.5 px-4 font-bold flex items-center justify-center gap-2 hover:bg-blue-700 shadow-sm shadow-blue-600/20 mb-6 transition-colors">
