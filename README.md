@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./src/assets/SketchSpace Light Mode.svg" alt="Sketchspace Logo" width="300" />
+  <img src="./src/assets/SketchSpace Dark Mode.svg" alt="Sketchspace Logo" width="300" />
   <br />
   <p><h3>A real-time, collaborative, infinite whiteboard built for rapid ideation and mathematical exploration.</h3></p>
 </div>
